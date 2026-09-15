@@ -19,6 +19,11 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 
+  #install-banner{display:none;background:#0f766e;color:#fff;padding:10px 14px;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;font-size:13px;}
+  #install-banner-actions{display:flex;gap:8px;align-items:center;}
+  #install-banner button{border:none;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer;font-weight:600;}
+  #btn-install-app{background:#fff;color:#0f766e;}
+  #btn-dismiss-install{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)!important;padding:4px 9px!important;}
   #back-to-launcher-bar{display:none;background:#1c2e4a;padding:8px 14px;text-align:right;}
   #back-to-launcher-bar button{background:transparent;border:1px solid #fff;color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12.5px;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;}
   #back-to-launcher-bar button:hover{background:rgba(255,255,255,.15);}
@@ -292,6 +297,14 @@
 </head>
 <body>
 
+<div id="install-banner">
+  <span id="install-banner-text">📲 Instala esta app en tu celular para acceso más rápido</span>
+  <div id="install-banner-actions">
+    <button id="btn-install-app">Instalar</button>
+    <button id="btn-dismiss-install" aria-label="Cerrar">✕</button>
+  </div>
+</div>
+
 <div id="back-to-launcher-bar"><button id="btn-volver-selector-global">← Volver al selector de formatos</button></div>
 
 <div id="app"><div class="center-wrap">Cargando…</div></div>
@@ -515,7 +528,18 @@ function applyRoleFlags(u){
 
 // ---------- bootstrap: revisar si mi cédula ya está guardada y su estado actual ----------
 async function bootstrap(){
-  if(!state.miCedula){ state.view = 'login'; seedHistory(); render(); return; }
+  if(!state.miCedula){
+    if(localStorage.getItem('masterAdmin')==='1' || localStorage.getItem('adminActive')==='1'){
+      // Sesión de administrador/maestro (entrada por contraseña, sin cédula asociada):
+      // se recuerda en este dispositivo para no pedir la contraseña en cada recarga.
+      state.isAdmin = true;
+      state.view = 'selector';
+      seedHistory();
+      render();
+      return;
+    }
+    state.view = 'login'; seedHistory(); render(); return;
+  }
   const u = await loadEntity('usuario', state.miCedula);
   if(!u){ state.view = 'login'; seedHistory(); render(); return; }
   state.miEstado = u.estado;
@@ -662,7 +686,7 @@ function renderSelector(){
   const adminVision = isAdminActive();
   return `
   <div class="topbar">
-    <div class="who">Conectado como <b>${state.miNombre}</b> · C.C. ${state.miCedula}${master?' · <span style="color:var(--red);font-weight:700;">Modo administrador maestro</span>':(adminVision?' · <span style="color:var(--ink);font-weight:700;">Modo administrador</span>':'')}</div>
+    <div class="who">${state.miCedula?`Conectado como <b>${state.miNombre}</b> · C.C. ${state.miCedula}`:'Sesión de administrador'}${master?' · <span style="color:var(--red);font-weight:700;">Modo administrador maestro</span>':(adminVision?' · <span style="color:var(--ink);font-weight:700;">Modo administrador</span>':'')}</div>
     <div class="actions">
       ${adminVision?`<button class="btn ghost small" id="btn-nav-back">← Atrás</button><button class="btn ghost small" id="btn-nav-fwd">Adelante →</button><button class="btn ghost small" id="btn-panel-desde-selector">Panel de usuarios</button>`:''}
       ${master?`<button class="btn ghost small" id="btn-salir-master">Salir del modo maestro</button>`:''}
@@ -3479,6 +3503,60 @@ window.EmergenciasApp = { start: emergenciasStart, stop: emergenciasStop };
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
 }
+</script>
+
+<script>
+// ===================== AVISO PARA INSTALAR COMO APP =====================
+(function(){
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+  function isIOS(){
+    return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  }
+  function dismissed(){
+    try{ return localStorage.getItem('installBannerDismissed')==='1'; }catch(e){ return false; }
+  }
+  function showBanner(kind){
+    if(isStandalone() || dismissed()) return;
+    const banner = document.getElementById('install-banner');
+    const text = document.getElementById('install-banner-text');
+    const btnInstall = document.getElementById('btn-install-app');
+    if(!banner) return;
+    if(kind==='ios'){
+      text.textContent = '📲 Para instalar: toca compartir (⬆️) y luego "Agregar a pantalla de inicio"';
+      btnInstall.style.display = 'none';
+    } else {
+      text.textContent = '📲 Instala esta app en tu celular para acceso más rápido';
+      btnInstall.style.display = '';
+    }
+    banner.style.display = 'flex';
+  }
+
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    showBanner('android');
+  });
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    if(isIOS() && !isStandalone()) showBanner('ios');
+    const btnInstall = document.getElementById('btn-install-app');
+    if(btnInstall) btnInstall.onclick = async ()=>{
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById('install-banner').style.display = 'none';
+    };
+    const btnDismiss = document.getElementById('btn-dismiss-install');
+    if(btnDismiss) btnDismiss.onclick = ()=>{
+      try{ localStorage.setItem('installBannerDismissed','1'); }catch(e){}
+      document.getElementById('install-banner').style.display = 'none';
+    };
+  });
+})();
 </script>
 </body>
 </html>
