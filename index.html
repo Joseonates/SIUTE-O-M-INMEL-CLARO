@@ -3,26 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
-<title>Mant. Preventivo Plantas Eléctricas — Claro Costa (Sincronizado)</title>
+<title>Mantenimiento Correctivo y Emergencias — Claro / INMEL (Sincronizado)</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#C8102E">
+<meta name="theme-color" content="#E30613">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Plantas Claro">
-</head>
-<body>
+<meta name="apple-mobile-web-app-title" content="Emergencias Claro">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <style>
   :root{
-    --claro-red:#C8102E; --claro-red-dark:#8f0b20; --ink:#1c1f26; --paper:#f6f5f2;
+    --claro-red:#E30613; --claro-red-dark:#a30410; --ink:#1c1f26; --paper:#f6f5f2;
     --panel:#ffffff; --line:#e2e0da; --muted:#6b7076; --good:#1e8a4c; --bad:#c8102e;
     --na:#9aa0a6; --amber:#b8860b; --mono:'JetBrains Mono','Consolas',monospace; --sans:'Inter',-apple-system,'Segoe UI',sans-serif;
   }
@@ -31,7 +27,7 @@
   #app{max-width:1000px;margin:0 auto;padding:18px 16px 60px;}
   .topbar{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--claro-red);padding-bottom:10px;margin-bottom:16px;flex-wrap:wrap;gap:8px;}
   .brand{display:flex;align-items:center;gap:10px;}
-  .brand .mark{width:34px;height:34px;border-radius:6px;background:var(--claro-red);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+  .brand .mark{width:34px;height:34px;border-radius:6px;background:var(--claro-red);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;}
   .brand .title{font-weight:800;font-size:15px;letter-spacing:.02em;}
   .brand .sub{font-size:11px;color:var(--muted);font-family:var(--mono);}
   .nav{display:flex;gap:6px;flex-wrap:wrap;}
@@ -45,7 +41,7 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
   label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
   input,select,textarea{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:6px;font-size:13.5px;font-family:var(--sans);background:#fff;color:var(--ink);}
-  textarea{resize:vertical;min-height:44px;}
+  textarea{resize:vertical;min-height:60px;}
   .field{margin-bottom:8px;}
   .btn{border:none;background:var(--claro-red);color:#fff;padding:10px 16px;border-radius:7px;font-weight:700;font-size:13.5px;cursor:pointer;}
   .btn:hover{background:var(--claro-red-dark);}
@@ -66,26 +62,6 @@
   table{width:100%;border-collapse:collapse;font-size:12.5px;}
   th{background:#faf9f7;text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);font-size:10.5px;text-transform:uppercase;color:var(--muted);letter-spacing:.03em;}
   td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;}
-  .item-name{width:32%;}
-  .foto-col{width:66px;text-align:center;}
-  select.estado-select{font-weight:700;padding:5px 6px;font-size:12px;}
-  select.estado-select[data-val="BUENO"]{color:var(--good);}
-  select.estado-select[data-val="MALO"]{color:var(--bad);}
-  select.estado-select[data-val="NO_APLICA"]{color:var(--na);}
-  select.estado-select[data-val=""]{color:var(--muted);font-style:italic;}
-  .foto-col-title{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;text-align:center;}
-  .ident-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;}
-  .ident-item{text-align:center;}
-  .ident-label{font-size:12px;font-weight:700;margin-bottom:6px;color:var(--ink);}
-  .extra-fields{display:none;gap:6px;margin-top:4px;}
-  .extra-fields.show{display:grid;grid-template-columns:1fr 1fr 1fr;}
-  .extra-fields textarea{min-height:30px;font-size:11.5px;}
-  .section-toggle{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:10px 4px;border-bottom:1px solid var(--line);gap:8px;}
-  .section-toggle .badge{font-size:10.5px;background:#f1f0eb;color:var(--muted);padding:2px 8px;border-radius:20px;font-family:var(--mono);white-space:nowrap;}
-  .section-body{display:none;padding-top:10px;}
-  .section-body.show{display:block;}
-  .chevron{transition:.15s;color:var(--muted);}
-  .chevron.open{transform:rotate(90deg);}
   .status-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
   .status-pill.en_progreso{background:#fff4e0;color:var(--amber);}
   .status-pill.finalizado{background:#e5f6ea;color:var(--good);}
@@ -106,20 +82,16 @@
   .readonly-note{background:#f1f0eb;color:var(--muted);padding:8px 10px;border-radius:6px;font-size:12px;margin-bottom:10px;}
   .success-card{text-align:center;padding:34px 18px;}
   .success-card .big{font-size:40px;margin-bottom:6px;}
+  select[data-val=""]{color:var(--muted);font-style:italic;}
 
   .photo-box{display:flex;gap:4px;justify-content:center;}
   .photo-btn{border:1px solid var(--line);background:#fff;border-radius:6px;width:28px;height:28px;font-size:13px;cursor:pointer;}
   .photo-btn:hover{border-color:var(--claro-red);}
   .photo-thumb-wrap{position:relative;display:inline-block;}
-  .photo-thumb{width:44px;height:44px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--line);display:block;}
+  .photo-thumb{width:60px;height:60px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--line);display:block;}
   .photo-del{position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid var(--line);border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1;padding:0;}
   .no-photo{color:var(--muted);font-size:10.5px;}
-  .row-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;}
-  .row-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .row-card-head .idx{font-family:var(--mono);font-size:11px;color:var(--claro-red-dark);font-weight:700;}
-  .row-del{background:none;border:none;color:var(--bad);font-size:12px;font-weight:600;cursor:pointer;}
-  .add-row-btn{width:100%;padding:12px;border:1.5px dashed var(--line);border-radius:10px;background:transparent;color:var(--claro-red-dark);font-weight:700;font-size:13px;cursor:pointer;}
-  .subhead{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;}
+  .foto-col-title{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;text-align:center;}
 
   .photo-modal-overlay{position:fixed;inset:0;background:rgba(10,10,10,.85);z-index:9999;align-items:center;justify-content:center;padding:20px;display:none;}
   .photo-modal-overlay.show{display:flex;}
@@ -127,8 +99,16 @@
   .photo-modal-inner img{max-width:92vw;max-height:78vh;border-radius:8px;display:block;}
   .photo-modal-caption{color:#fff;font-size:12.5px;margin-top:10px;}
   .photo-modal-close{position:absolute;top:-16px;right:-16px;background:#fff;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-weight:700;}
-</style>
 
+  .row-card{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px;background:#fff;}
+  .row-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .row-card-head .idx{font-family:var(--mono);font-size:11px;color:var(--claro-red-dark);font-weight:700;}
+  .row-del{background:none;border:none;color:var(--bad);font-size:12px;font-weight:600;cursor:pointer;}
+  .add-row-btn{width:100%;padding:12px;border:1.5px dashed var(--line);border-radius:10px;background:transparent;color:var(--claro-red-dark);font-weight:700;font-size:13px;cursor:pointer;}
+  .subhead{font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 8px;}
+</style>
+</head>
+<body>
 <div id="app"><div class="empty">Cargando…</div></div>
 <div id="photo-modal" class="photo-modal-overlay">
   <div class="photo-modal-inner">
@@ -153,8 +133,7 @@
 
    Nota técnica: cada valor que se guarda se parte en "chunks"
    de forma automática y transparente para no chocar con el
-   límite de 1 MB por documento de Firestore (una OT con muchas
-   fotos puede pesar varios MB en total).
+   límite de 1 MB por documento de Firestore.
    ============================================================ */
 (function () {
   const firebaseConfig = {
@@ -172,12 +151,11 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
-  const CHUNK_SIZE = 700000; // caracteres por chunk, deja margen bajo el límite de 1MB de Firestore
+  const CHUNK_SIZE = 700000;
 
   function sanitize(key) { return String(key).replace(/[\/.]/g, "_"); }
 
-  // ---- Respaldo local (IndexedDB) para claves no compartidas ----
-  const DB_NAME = "plantas-claro-local-db";
+  const DB_NAME = "emergencias-claro-local-db";
   const STORE = "kv";
   function openLocalDB() {
     return new Promise((resolve, reject) => {
@@ -272,197 +250,80 @@
 <script>
 (function(){
 
-const CHECKLIST_SECTIONS = [
-  {key:"lubricacion", title:"1. Sistema de Lubricación de Planta Eléctrica", items:[
-    "Alarmas activas que impidan el arranque y puesta en servicio",
-    "Nivel de aceite de la planta está dentro de las marcas Max y Min",
-    "Inspeccionar juntas, empaques y retenedores del motor por fugas o deterioro",
-    "Estado Pera o sensor de Aceite",
-    "Presión de aceite: registrar lectura (Kg/Cm2 o PSI) y verificar a temperatura de operación",
-    "Evidencia de Diluido o contaminación",
-    "Existencia de Fugas"
-  ]},
-  {key:"combustible", title:"2. Sistema de Combustible de Planta Eléctrica", items:[
-    "Conexiones de combustible (adecuadas y no presentan fugas)",
-    "Abrazaderas",
-    "Tanques de combustible (anclados adecuadamente)",
-    "Cantidad de contaminación por agua u otros materiales extraños, calidad (densidad específica)",
-    "Líneas de combustible de baja presión (tanque-filtros-bomba): fugas, condición y seguridad",
-    "Líneas de combustible de alta presión (bomba inyección-inyectores): fugas, condición y seguridad",
-    "Revisar y registrar la presión de combustible",
-    "La restricción de combustible de entrada",
-    "Resultado de Limpieza",
-    "Bomba de Inyección",
-    "Bomba de Transferencia",
-    "Nivel Combustible",
-    "Estado válvulas de drenaje tanques (libres de objetos y se accionan fácilmente)"
-  ]},
-  {key:"aspiracion", title:"3. Sistema de Aspiración", items:[
-    "Inspecciona las condiciones de las tomas de aire y los ductos y su correcta operación",
-    "Revisa los filtros de aire por condición y seguridad, apretar abrazaderas y soportes",
-    "Inspección de salida de turbocargador (de existir), boquilla y tubos por condiciones y seguridad",
-    "Dar servicio a los respiradores del carter y drenaje de la caja de aire como se requiera",
-    "Revisar y registrar la restricción de aire de admisión",
-    "Revisar y registrar la presión del cárter"
-  ]},
-  {key:"refrigeracion", title:"4. Sistema de Refrigeración de Planta Eléctrica", items:[
-    "Bomba de Agua",
-    "Revisar el nivel de refrigerante, rellenar como se requiera",
-    "Realizar la prueba de presión y revisar posibles fugas",
-    "Revisar la banda de la polea del ventilador por condiciones y tensión, ajustar/reemplazar",
-    "Revisar las mangueras y tubos de refrigerante por condiciones adecuadas y seguridad",
-    "Revisar el panal del radiador por arreglo y limpieza, condiciones y seguridad",
-    "Revisar rodamientos de polea del ventilador y polea loca, alojamientos, soportes y tensores",
-    "Inspeccionar las aspas del ventilador, guardas y soporte, apretar sujetadores",
-    "Estado de Termostato",
-    "Revisar y registrar la temperatura del refrigerante bajo condiciones de operación",
-    "Sensor de nivel de Refrigerante",
-    "Sensor de temperatura",
-    "Estado de ventilador"
-  ]},
-  {key:"escape", title:"5. Sistema de Escape y Admisión Planta Eléctrica", items:[
-    "Multiple de Escape",
-    "Revisar los tubos de escape y sus conexiones, apretar sujetadores y tornillos de bridas",
-    "Turboalimentador: estado general, mangueras y conexiones",
-    "Revisar los soportes del silenciador, operar sus drenajes",
-    "Tubería de Escape Exhosto",
-    "Templetes Sistema de Escape (ajustados y sin signos de oxidación)",
-    "Estado tubería del filtro de aire"
-  ]},
-  {key:"electrico_motor", title:"6. Sistema Eléctrico de Motor", items:[
-    "Revisar los cables de la marcha del motor, alambres y conectores por condición y seguridad",
-    "Revisar y registrar el voltaje de flotación de baterías de arranque y nivel de electrolito",
-    "Revisar el cargador de baterías por operación y salida, bornes de batería",
-    "Revisar y registrar la corriente de funcionamiento de la marcha",
-    "Revisar los controles eléctricos, terminales de sensores",
-    "Revisar operación del pre-calentador de agua, termostatos de control y contactor de desconexión",
-    "Probar todos los dispositivos de protección del motor",
-    "Alternador y Correas",
-    "Motor de Arranque",
-    "Arnés o cableado de control",
-    "Tarjeta de Control",
-    "Magnetic-Pickup",
-    "AVR Generador",
-    "Totalizador Planta y Dimensionamiento",
-    "Test De Lámparas, Leds Y Pilotos",
-    "Fusibles y Protecciones",
-    "Tarjeta De Control De Velocidad",
-    "Sensores, manómetros y elementos de medición"
-  ]},
-  {key:"generador", title:"7. Generador (Mecánico / Eléctrico)", items:[
-    "Revisar y verificar los pernos de anclaje de la Planta Eléctrica",
-    "Revisar los tornillos del acoplamiento flexible",
-    "Revisar las guardas del ventilador por condiciones y seguridad",
-    "Revisar la pantalla de la toma de aire por limpieza de líneas, condiciones y seguridad",
-    "Revisar rodamientos",
-    "Revisar las conexiones mecánicas por apriete, condiciones y seguridad",
-    "Revisar y registrar el voltaje residual, en vacío y con carga",
-    "Revisar el ensamble del excitador, estator y campos por limpieza e integridad física",
-    "Revisar las terminales de cables y alambres en el generador por condición y seguridad",
-    "Revisar el rectificador rotativo y el supresor de onda por condición, conexiones y apriete",
-    "Probar los dispositivos de protección del generador",
-    "Revisar el extremo del alojamiento de la campana por limpieza e interferencia con rotativos"
-  ]},
-  {key:"modulo_control", title:"8. Módulo de Control", items:[
-    "Verificar la operación de los controles de encendido automático y control remoto",
-    "Verificar la operación del equipo de generación, indicadores asociados, luces y alarmas",
-    "Revisar y ajustar como se requiera la frecuencia y el voltaje del sistema",
-    "Verificar la operación y calibración de los instrumentos del generador y el motor"
-  ]},
-  {key:"transferencia", title:"9. Transferencia Automática", items:[
-    "Estado del Tablero Metálico (Gabinete o Cofre) y Puerta",
-    "Terminales de Conductores",
-    "Cableado (estado y organización)",
-    "Contactores Principales",
-    "Vigilantes de Tensión",
-    "Totalizador",
-    "Temporizadores",
-    "Relevos",
-    "Pilotos",
-    "Contactos Auxiliares",
-    "Tarjeta de Control",
-    "Display y Módulo de Comunicación",
-    "Protección sobretensiones y Transientes"
-  ]}
-];
-
-const PRUEBAS_ITEMS = [
-  "Funcionamiento de la Planta en Vacío",
-  "Funcionamiento de la Planta con Carga",
-  "Transferencia automática entre Red Comercial y Planta (y viceversa)",
-  "Funcionamiento de planta forzada desde Transferencia (Manual)"
-];
-
-const FILTRACION_ITEMS = [
-  "Cambio de Filtro de Aceite (Antes)","Cambio de Filtro de Aceite (Después)",
-  "Cambio de Filtro de Combustible (Antes)","Cambio de Filtro de Combustible (Después)",
-  "Cambio de Filtro de Aire (Antes)","Cambio de Filtro de Aire (Después)",
-  "Cambio de Aceite (Antes)","Cambio de Aceite (Después)",
-  "Cambio de Refrigerante (Antes)","Cambio de Refrigerante (Después)",
-  "Drenaje de Tanques de Combustible (durante ejecución)"
-];
-
-const IDENT_ITEMS = ["Llegada al sitio","Placa de planta","Placa motor","Placa generador"];
-
-const LOC_INTERVAL_MS = 2*60*60*1000; // cada 2 horas
+const LOC_INTERVAL_MS = 2*60*60*1000;
 const PHOTO_MAX_DIM = 480;
 const PHOTO_QUALITY = 0.55;
 
 let state = { view:"home", currentSession:null, locTimer:null, liveTimer:null, viewerId:null, viewedSession:null };
+(function(){
+  try{
+    const params = new URLSearchParams(location.search);
+    const t = params.get('tipo');
+    if(t){ state.pendingTipo = t; state.view = 'nuevo'; }
+  }catch(e){}
+})();
 
 function uid(){ return 'OT' + Math.floor(1000000+Math.random()*8999999); }
 function rid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-const ROW_TEMPLATES = {
-  transporte: ()=>({id:rid(),distanciaKm:"",tiempo:"",tipo:"",observacion:"",foto:null}),
-};
 function nowIso(){ return new Date().toISOString(); }
 function fmt(dt){ if(!dt) return "—"; const d=new Date(dt); return d.toLocaleString('es-CO',{dateStyle:'short',timeStyle:'short'}); }
 function isMasterAdmin(){ try{ return localStorage.getItem('masterAdmin')==='1'; }catch(e){ return false; } }
 function isAdminOnlyMode(){ try{ return localStorage.getItem('adminActive')==='1' && localStorage.getItem('masterAdmin')!=='1'; }catch(e){ return false; } }
 function hasAdminAccess(){ return isAdminOnlyMode() || isMasterAdmin(); }
 
-function emptyEntry(){ return {estado:"",causa:"",deteccion:"",correccion:"",foto:null}; }
-
 function emptySession(otId){
-  const checklist = {};
-  CHECKLIST_SECTIONS.forEach(sec=>{ checklist[sec.key] = sec.items.map(()=>emptyEntry()); });
   return {
     id: otId && otId.trim() ? otId.trim() : uid(),
     createdAt: nowIso(), updatedAt: nowIso(), status: "en_progreso",
-    general: {nombreEstacion:"",direccion:"",jefatura:"",siteOwner:"",zona:"",region:"COSTA",modalidad:"",odh:"",responsableTec1:"",responsableTec2:"",empresaAliado:"INMEL",fechaInicio:nowIso(),fechaFin:""},
-    planta: {marca:"",modelo:"",serial:"",horasTrabajo:"",frecuenciaHz:"60",capacidadKVA:"",capacidadKW:"",derrateo:"0",velocidadRpm:"1800",marcaMotor:"",modeloMotor:"",serialMotor:"",presionAceite:"",tempAceite:"",tempRefrigerante:"",marcaGenerador:"",modeloGenerador:"",serialGenerador:"",voltajeBateria:"",tipoBateria:"",estadoCargador:"BUENO",vacL1L2:"",vacL1L3:"",vacL2L3:"",ampL1:"",ampL2:"",ampL3:"",tempAmbiente:"",cargaPlanta:"",admisionAire:"BUENO"},
-    checklist: checklist,
-    identificacion: IDENT_ITEMS.map(()=>({foto:null})),
-    pruebas: PRUEBAS_ITEMS.map(()=>emptyEntry()),
-    filtracion: FILTRACION_ITEMS.map(()=>({estado:"",observacion:"",foto:null})),
-    hallazgos: {resumenTecnico:"",recomendaciones:"",estadoFinal:"OPERATIVO"},
-    hallazgoSi:"", hallazgosObservaciones:"", hallazgosFotos:[], hallazgosDetalle:[],
-    firma: {ejecuta:"",cc:"",revisa:"",empresa:"INMEL",fechaElaboracion:""},
-    ubicaciones: [],
-    transporte: [],
-    videos: []
+    general: {
+      nombreEstacion:"", categoria:"", regional:"", responsable:"", departamento:"", noInc:"",
+      direccion:"", noTas:"", tipoEstacion:"", fechaEjecucion:nowIso(), tipoSitio:"", fechaFin:"",
+      siteOwner:""
+    },
+    actividad: {
+      tipoActividad:"", tipoEquipoFalla:"", subsistema:"", modelo:"",
+      afectacionServicios:"", reinstalacion:"", cambio:"", reparacion:""
+    },
+    descripcionFalla:"", descripcionSolucion:"",
+    repuestosRetirados:[], repuestosInstalados:[],
+    materiales:[], evidencias:[],
+    hallazgoSi:"", hallazgosObservaciones:"", hallazgosFotos:[], hallazgos:[],
+    transporte:[],
+    fallaResuelta:"", observaciones:"",
+    firma:{ejecuta:"",empresa:"INMEL",revisa:"",fechaElaboracion:""},
+    ubicaciones:[],
+    videos:[]
   };
 }
+const ROW_TEMPLATES = {
+  repuestosRetirados: ()=>({id:rid(),descripcion:"",marca:"",modelo:"",serial:""}),
+  repuestosInstalados: ()=>({id:rid(),descripcion:"",marca:"",modelo:"",serial:""}),
+  materiales: ()=>({id:rid(),cantidad:"",unidad:"",descripcion:"",fotoAntes:null,fotoDespues:null}),
+  evidencias: ()=>({id:rid(),caption:"",foto:null}),
+  hallazgos: ()=>({id:rid(),sistema:"",prioridad:"Media",descripcion:"",resuelto:"",foto:null}),
+  hallazgosFotos: ()=>({id:rid(),foto:null}),
+  transporte: ()=>({id:rid(),distanciaKm:"",tiempo:"",tipo:"",observacion:"",foto:null}),
+};
 
 // ---------- STORAGE ----------
 async function saveSession(sess){
   sess.updatedAt = nowIso();
-  await window.storage.set('plantas-session:'+sess.id, JSON.stringify(sess), true);
+  await window.storage.set('emergencias-session:'+sess.id, JSON.stringify(sess), true);
   await updateIndex(sess);
 }
 async function saveSessionSafe(sess){
   try{ await saveSession(sess); return true; }catch(e){ console.error(e); return false; }
 }
 async function loadSession(id){
-  try{ const r = await window.storage.get('plantas-session:'+id, true); return r ? JSON.parse(r.value) : null; }catch(e){ return null; }
+  try{ const r = await window.storage.get('emergencias-session:'+id, true); return r ? JSON.parse(r.value) : null; }catch(e){ return null; }
 }
 async function updateIndex(sess){
-  const summary = {id:sess.id, tipo:'plantas', nombreEstacion:sess.general.nombreEstacion||"(sin nombre)", status:sess.status, createdAt:sess.createdAt, updatedAt:sess.updatedAt};
-  try{ await window.storage.set('plantas-index-entry:'+sess.id, JSON.stringify(summary), true); }catch(e){ console.error(e); }
+  const summary = {id:sess.id, tipo:'emergencias', nombreEstacion:sess.general.nombreEstacion||"(sin nombre)", status:sess.status, createdAt:sess.createdAt, updatedAt:sess.updatedAt};
+  try{ await window.storage.set('emergencias-index-entry:'+sess.id, JSON.stringify(summary), true); }catch(e){ console.error(e); }
 }
 async function getIndex(){
   try{
-    const listing = await window.storage.list('plantas-index-entry:', true);
+    const listing = await window.storage.list('emergencias-index-entry:', true);
     const keys = (listing && listing.keys) || [];
     const entries = await Promise.all(keys.map(async (k)=>{
       try{ const r = await window.storage.get(k, true); return r ? JSON.parse(r.value) : null; }catch(e){ return null; }
@@ -470,52 +331,6 @@ async function getIndex(){
     return entries.filter(Boolean);
   }catch(e){ return []; }
 }
-// ---------- base de datos de sitios (nombre + coordenadas) para validar cercanía ----------
-const SITIO_DIST_MAX_M = 800;
-let SITIOS_DB = [];
-let SITIOS_DB_LOADED = false;
-
-function normalizeName(s){
-  return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-}
-async function loadSitiosDB(){
-  try{
-    const r = await window.storage.get('plantas-sitios-db', true);
-    SITIOS_DB = r ? JSON.parse(r.value) : [];
-  }catch(e){ SITIOS_DB = []; }
-  SITIOS_DB_LOADED = true;
-}
-async function saveSitiosDB(list){
-  SITIOS_DB = list;
-  await window.storage.set('plantas-sitios-db', JSON.stringify(list), true);
-}
-function distanceMeters(lat1, lon1, lat2, lon2){
-  const R = 6371000;
-  const toRad = d => d*Math.PI/180;
-  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-function findSitioByNombre(nombre){
-  const n = normalizeName(nombre);
-  if(!n) return null;
-  return SITIOS_DB.find(s => normalizeName(s.nombre) === n) || null;
-}
-function getUbicacionValidacion(sess){
-  if(!SITIOS_DB.length) return {estado:'sin-db'};
-  const nombre = (sess.general.nombreEstacion||'').trim();
-  if(!nombre) return {estado:'sin-nombre'};
-  const sitio = findSitioByNombre(nombre);
-  if(!sitio) return {estado:'no-encontrado'};
-  const ubics = sess.ubicaciones||[];
-  if(!ubics.length) return {estado:'sin-gps', sitio};
-  const last = ubics[ubics.length-1];
-  if(last.lat==null || last.lng==null) return {estado:'sin-gps', sitio};
-  const dist = distanceMeters(last.lat, last.lng, sitio.lat, sitio.lng);
-  if(dist > SITIO_DIST_MAX_M) return {estado:'bloqueado', sitio, dist};
-  return {estado:'ok', sitio, dist};
-}
-
 async function deleteSessionEverywhere(id){
   try{
     const sess = await loadSession(id);
@@ -523,20 +338,20 @@ async function deleteSessionEverywhere(id){
       for(const v of sess.videos){ await deleteVideoData(id, v.id); }
     }
   }catch(e){}
-  try{ await window.storage.delete('plantas-session:'+id, true); }catch(e){}
-  try{ await window.storage.delete('plantas-index-entry:'+id, true); }catch(e){}
+  try{ await window.storage.delete('emergencias-session:'+id, true); }catch(e){}
+  try{ await window.storage.delete('emergencias-index-entry:'+id, true); }catch(e){}
 }
 
 // ---------- videos (guardados aparte, no dentro del JSON de la sesión) ----------
 const VIDEO_MAX_MB = 20;
 async function saveVideoData(sessId, videoId, dataUrl){
-  await window.storage.set('plantas-video-data:'+sessId+':'+videoId, dataUrl, true);
+  await window.storage.set('emergencias-video-data:'+sessId+':'+videoId, dataUrl, true);
 }
 async function loadVideoData(sessId, videoId){
-  try{ const r = await window.storage.get('plantas-video-data:'+sessId+':'+videoId, true); return r ? r.value : null; }catch(e){ return null; }
+  try{ const r = await window.storage.get('emergencias-video-data:'+sessId+':'+videoId, true); return r ? r.value : null; }catch(e){ return null; }
 }
 async function deleteVideoData(sessId, videoId){
-  try{ await window.storage.delete('plantas-video-data:'+sessId+':'+videoId, true); }catch(e){}
+  try{ await window.storage.delete('emergencias-video-data:'+sessId+':'+videoId, true); }catch(e){}
 }
 
 // ---------- GEOLOCATION ----------
@@ -566,24 +381,8 @@ function startLocationLoop(sess){
 function stopLocationLoop(){ if(state.locTimer){ clearInterval(state.locTimer); state.locTimer=null; } }
 function mapLink(lat,lng){ return `https://www.google.com/maps?q=${lat},${lng}`; }
 
-// ---------- session/array helpers ----------
 function activeSession(){ return state.view==='viewsession' ? state.viewedSession : state.currentSession; }
-function arrForSec(sec){
-  const s = activeSession();
-  if(!s) return null;
-  if(sec==='__pruebas') return s.pruebas;
-  if(sec==='__filt') return s.filtracion;
-  if(sec==='__ident') return s.identificacion;
-  return s.checklist[sec];
-}
-function labelForKey(key){
-  const [sec, idxStr] = key.split(':'); const idx = parseInt(idxStr,10);
-  if(sec==='__pruebas') return `Prueba realizada — ${PRUEBAS_ITEMS[idx]}`;
-  if(sec==='__filt') return `Servicio de filtración — ${FILTRACION_ITEMS[idx]}`;
-  if(sec==='__ident') return `Lista de chequeo general planta — ${IDENT_ITEMS[idx]}`;
-  const section = CHECKLIST_SECTIONS.find(s=>s.key===sec);
-  return section ? `${section.title} — ${section.items[idx]}` : key;
-}
+function findRow(arrName, rowId){ const s=activeSession(); if(!s) return null; return (s[arrName]||[]).find(r=>r.id===rowId); }
 
 // ---------- photo capture / compression ----------
 function compressImage(file){
@@ -608,16 +407,17 @@ function compressImage(file){
     reader.readAsDataURL(file);
   });
 }
-
-function photoCellHtml(key, entry, readonly){
-  if(entry && entry.foto){
-    return `<div class="foto-col-title">Evidencia</div><div class="photo-thumb-wrap">
-      <img src="${entry.foto}" class="photo-thumb" data-enlarge="${key}">
+// photo key format: arrName|rowId|field
+function photoCellHtml(key, dataUrl, readonly, label){
+  const lbl = label || 'Evidencia';
+  if(dataUrl){
+    return `<div class="foto-col-title">${lbl}</div><div class="photo-thumb-wrap">
+      <img src="${dataUrl}" class="photo-thumb" data-enlarge="${key}">
       ${!readonly?`<button type="button" class="photo-del" data-delphoto="${key}" title="Eliminar foto">✕</button>`:''}
     </div>`;
   }
-  if(readonly) return `<div class="foto-col-title">Evidencia</div><span class="no-photo">— sin foto —</span>`;
-  return `<div class="foto-col-title">Evidencia</div><div class="photo-box">
+  if(readonly) return `<div class="foto-col-title">${lbl}</div><span class="no-photo">— sin foto —</span>`;
+  return `<div class="foto-col-title">${lbl}</div><div class="photo-box">
     <button type="button" class="photo-btn" data-cam="${key}" title="Tomar foto con la cámara">📷</button>
     <button type="button" class="photo-btn" data-gal="${key}" title="Elegir de galería">🖼️</button>
     <input type="file" accept="image/*" class="photo-input" data-key="${key}" style="display:none;">
@@ -629,8 +429,8 @@ function topbar(activeView){
   return `
   <div class="topbar">
     <div class="brand">
-      <div class="mark">CC</div>
-      <div><div class="title">Claro Costa · Mant. Preventivo</div><div class="sub">Plantas Eléctricas — SMU</div></div>
+      <div class="mark">C·I</div>
+      <div><div class="title">Claro · INMEL — O&amp;M</div><div class="sub">Mant. Correctivo y Emergencias</div></div>
     </div>
     <div class="nav">
       <button data-nav="home" class="${activeView==='home'?'active':''}">Inicio</button>
@@ -644,62 +444,36 @@ async function render(){
   const app = document.getElementById('app');
   if(state.view==="home") app.innerHTML = topbar('home') + renderHome();
   else if(state.view==="nuevo") app.innerHTML = topbar('') + renderNuevo();
-  else if(state.view==="sitio-check") app.innerHTML = topbar('') + renderSitioCheck(state.currentSession);
   else if(state.view==="historial") app.innerHTML = topbar('historial') + await renderHistorialAsync();
   else if(state.view==="supervisor") app.innerHTML = topbar('supervisor') + await renderSupervisorAsync();
-  else if(state.view==="sitios-db") app.innerHTML = topbar('') + renderSitiosDB();
   else if(state.view==="form") app.innerHTML = topbar('') + renderForm(state.currentSession,false);
   else if(state.view==="viewsession") app.innerHTML = topbar('') + renderForm(state.viewedSession,true);
   else if(state.view==="finalizado") app.innerHTML = topbar('') + renderFinalizado();
   attachHandlers();
 }
 
-function renderSitiosDB(){
-  return `<div class="card"><h2>📍 Base de datos de sitios</h2>
-    <p class="hint">Sube un archivo Excel (.xlsx) o CSV con el nombre y las coordenadas de cada estación base. La <b>columna A</b> debe tener el nombre del sitio. En las demás columnas, busca automáticamente las que incluyan las palabras "latitud" y "longitud" en el encabezado (no importa el orden ni mayúsculas/minúsculas).</p>
-    <p class="hint">Cuando un técnico escriba el nombre del sitio en el formulario, la app comparará la ubicación GPS actual contra estas coordenadas. Si la distancia supera los <b>${SITIO_DIST_MAX_M} metros</b>, el resto del formulario queda bloqueado hasta corregir el nombre o acercarse al sitio correcto.</p>
-    <div class="row-actions">
-      <button type="button" class="btn" id="btn-upload-sitios">⬆️ Subir / reemplazar base de datos</button>
-      <input type="file" accept=".xlsx,.xls,.csv" id="sitios-file-input" style="display:none;">
-      ${SITIOS_DB.length?`<button type="button" class="btn danger" id="btn-clear-sitios">🗑️ Borrar base de datos</button>`:''}
-      <button class="btn ghost" data-nav="home">← Volver al inicio</button>
-    </div>
-    <div class="subhead" style="margin-top:16px;">Sitios cargados (${SITIOS_DB.length})</div>
-    ${SITIOS_DB.length===0?'<div class="empty">Aún no hay ninguna base de datos cargada.</div>':`
-    <table><thead><tr><th>Nombre</th><th>Latitud</th><th>Longitud</th></tr></thead><tbody>
-    ${SITIOS_DB.slice(0,300).map(s=>`<tr><td>${s.nombre}</td><td>${s.lat}</td><td>${s.lng}</td></tr>`).join('')}
-    </tbody></table>
-    ${SITIOS_DB.length>300?`<p class="hint">Mostrando los primeros 300 de ${SITIOS_DB.length} sitios.</p>`:''}`}
-  </div>`;
-}
-
 function renderHome(){
   return `
   <div class="home-grid">
-    ${isAdminOnlyMode()?`<div class="card" style="grid-column:1/-1;"><p class="hint" style="margin:0;">Como administrador puedes ver el historial y el modo supervisor, pero no crear nuevos mantenimientos ni borrar formatos.</p></div>`:`
-    <div class="home-card" data-nav="nuevo">
-      <div class="icon">🛠️</div><h3>Nuevo mantenimiento</h3>
-      <p>Ingresa el número de OT y llena el formulario en campo, con fotos de evidencia y ubicación GPS.</p>
+    ${isAdminOnlyMode()?`<div class="card" style="grid-column:1/-1;"><p class="hint" style="margin:0;">Como administrador puedes ver el historial y el modo supervisor, pero no crear nuevas atenciones ni borrar formatos.</p></div>`:`
+    <div class="home-card" data-nav="nuevo" data-tipo="Emergencia">
+      <div class="icon">🚨</div><h3>Nueva Emergencia</h3>
+      <p>Ingresa el número de OT y registra la atención de emergencia en campo. Para Correctivos, usa la tarjeta correspondiente en el panel principal.</p>
     </div>`}
     <div class="home-card" data-nav="historial">
       <div class="icon">🗂️</div><h3>Historial</h3>
-      <p>Ver o descargar (PDF) los mantenimientos guardados.</p>
+      <p>Ver o descargar (PDF) los reportes guardados.</p>
     </div>
     ${hasAdminAccess()?`<div class="home-card" data-nav="supervisor">
       <div class="icon">📡</div><h3>Modo supervisor</h3>
-      <p>Ver en línea un mantenimiento en curso, revisar las evidencias fotográficas y descargar formatos.</p>
-    </div>`:''}
-    ${hasAdminAccess()?`<div class="home-card" data-nav="sitios-db">
-      <div class="icon">📍</div><h3>Base de datos de sitios</h3>
-      <p>${SITIOS_DB.length} sitio${SITIOS_DB.length===1?'':'s'} cargado${SITIOS_DB.length===1?'':'s'} — nombre y coordenadas para validar la ubicación del técnico.</p>
+      <p>Ver en línea una atención en curso y revisar sus evidencias.</p>
     </div>`:''}
   </div>
   <div class="card" style="margin-top:14px;">
-    <h2>Cómo funciona el enlace remoto</h2>
+    <h2>Cómo funciona</h2>
     <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin:0;">
-      Los datos (incluyendo fotos y ubicación) se guardan en un almacenamiento <b>compartido</b>. Comparte este mismo
-      enlace con el supervisor: en "Modo supervisor" podrá ver en vivo el avance, revisar cada evidencia fotográfica
-      tomada por el técnico, y descargar o eliminar cualquier formato desde el Historial.
+      Cualquier cantidad de técnicos puede atender emergencias en paralelo, en distintos sitios, cada uno con su
+      propia OT. El supervisor puede revisar en "Modo supervisor" cualquier atención en curso o finalizada.
     </p>
   </div>`;
 }
@@ -707,13 +481,13 @@ function renderHome(){
 function renderNuevo(){
   const suggested = uid();
   return `<div class="card">
-    <h2>Nuevo mantenimiento — Número de OT</h2>
+    <h2>Nueva atención${state.pendingTipo?(' — '+state.pendingTipo):''} — Número de OT</h2>
     <div class="field"><label>Número de Orden de Trabajo (OT)</label>
-      <input id="ot-input" placeholder="Ej: OT5231811" value="${suggested}">
+      <input id="ot-input" placeholder="Ej: OT5309583" value="${suggested}">
     </div>
     <p style="font-size:12px;color:var(--muted);">Puedes dejar el número sugerido o escribir el número real de tu OT.</p>
     <div class="row-actions">
-      <button class="btn" id="btn-crear-ot">🛠️ Crear e iniciar mantenimiento</button>
+      <button class="btn" id="btn-crear-ot">🚨 Crear e iniciar atención</button>
       <button class="btn ghost" id="btn-volver">← Cancelar</button>
     </div>
   </div>`;
@@ -721,9 +495,9 @@ function renderNuevo(){
 
 async function renderHistorialAsync(){
   const idx = await getIndex();
-  if(idx.length===0) return `<div class="card"><div class="empty">Aún no hay mantenimientos guardados.</div></div>`;
+  if(idx.length===0) return `<div class="card"><div class="empty">Aún no hay reportes guardados.</div></div>`;
   idx.sort((a,b)=> new Date(b.updatedAt)-new Date(a.updatedAt));
-  return `<div class="card"><h2>Historial de mantenimientos</h2>
+  return `<div class="card"><h2>Historial de atenciones</h2>
     <div class="hist-list">
       ${idx.map(s=>`
         <div class="hist-row">
@@ -734,6 +508,7 @@ async function renderHistorialAsync(){
           <span class="status-pill ${s.status}">${s.status==='en_progreso'?'En progreso':'Finalizado'}</span>
           <div class="hist-actions">
             <button class="btn secondary small" data-pdf="${s.id}">⬇️ PDF</button>
+            
             ${isMasterAdmin()?`<button class="btn danger small" data-delete="${s.id}">🗑️ Borrar</button>`:''}
           </div>
         </div>`).join('')}
@@ -744,8 +519,8 @@ async function renderHistorialAsync(){
 async function renderSupervisorAsync(){
   const idx = await getIndex();
   const enProgreso = idx.filter(s=>s.status==='en_progreso');
-  let html = `<div class="card"><h2>Ver mantenimiento en vivo</h2>`;
-  if(enProgreso.length===0){ html += `<div class="empty">No hay mantenimientos en progreso en este momento.</div></div>`; return html; }
+  let html = `<div class="card"><h2>Ver atención en vivo</h2>`;
+  if(enProgreso.length===0){ html += `<div class="empty">No hay atenciones en progreso en este momento.</div></div>`; return html; }
   html += `<div class="hist-list">
     ${enProgreso.map(s=>`
       <div class="hist-row">
@@ -764,10 +539,10 @@ function renderFinalizado(){
   const sess = state.currentSession;
   return `<div class="card success-card">
     <div class="big">✅</div>
-    <h2 style="border:none;">Mantenimiento guardado</h2>
-    <p style="color:var(--muted);">OT <b>${sess.id}</b> quedó registrada como <b>finalizada</b>, con sus evidencias fotográficas y ubicaciones.</p>
+    <h2 style="border:none;">Atención guardada</h2>
+    <p style="color:var(--muted);">OT <b>${sess.id}</b> quedó registrada como <b>finalizada</b>.</p>
     <div class="row-actions" style="justify-content:center;">
-      <button class="btn" id="btn-otro-formato">🛠️ Generar otro formato</button>
+      <button class="btn" id="btn-otro-formato">🚨 Generar otro reporte</button>
       <button class="btn secondary" id="btn-dl-pdf">⬇️ Descargar PDF</button>
       
       <button class="btn ghost" id="btn-ver-historial">🗂️ Ver historial</button>
@@ -775,59 +550,27 @@ function renderFinalizado(){
   </div>`;
 }
 
-function checklistRow(secKey, i, item, entry, readonly){
-  const disabled = readonly?'disabled':'';
-  const showExtra = entry.estado === "MALO" || entry.estado === "NO_APLICA";
-  const key = `${secKey}:${i}`;
-  return `
-  <tr>
-    <td class="item-name">${i+1}. ${item}
-      <div class="extra-fields ${showExtra?'show':''}" data-extra="${key}">
-        <div><label>Causa posible</label><textarea data-field="causa" ${disabled}>${entry.causa||''}</textarea></div>
-        <div><label>Forma de detectarlo</label><textarea data-field="deteccion" ${disabled}>${entry.deteccion||''}</textarea></div>
-        <div><label>Forma de corregirlo</label><textarea data-field="correccion" ${disabled}>${entry.correccion||''}</textarea></div>
-      </div>
-    </td>
-    <td><select class="estado-select" data-val="${entry.estado}" data-sec="${secKey}" data-idx="${i}" ${disabled}>
-      <option value="" ${entry.estado===''?'selected':''}>Seleccione</option>
-      <option value="BUENO" ${entry.estado==='BUENO'?'selected':''}>BUENO</option>
-      <option value="MALO" ${entry.estado==='MALO'?'selected':''}>MALO</option>
-      <option value="NO_APLICA" ${entry.estado==='NO_APLICA'?'selected':''}>N/APLICA</option>
-    </select></td>
-    <td class="foto-col" data-photo-cell="${key}">${photoCellHtml(key, entry, readonly)}</td>
-  </tr>`;
-}
-
-function filtracionRow(i, item, entry, readonly){
-  const disabled = readonly?'disabled':'';
-  const key = `__filt:${i}`;
-  return `<tr>
-    <td>${i+1}. ${item}</td>
-    <td><select class="estado-select" data-val="${entry.estado}" data-sec="__filt" data-idx="${i}" ${disabled}>
-      <option value="" ${entry.estado===''?'selected':''}>Seleccione</option>
-      <option value="BUENO" ${entry.estado==='BUENO'?'selected':''}>BUENO</option>
-      <option value="MALO" ${entry.estado==='MALO'?'selected':''}>MALO</option>
-      <option value="NO_APLICA" ${entry.estado==='NO_APLICA'?'selected':''}>N/APLICA</option>
-    </select></td>
-    <td><input data-filtobs="${i}" value="${(entry.observacion||'').replace(/"/g,'&quot;')}" ${disabled}></td>
-    <td class="foto-col" data-photo-cell="${key}">${photoCellHtml(key, entry, readonly)}</td>
-  </tr>`;
-}
-
 function textField(labelTxt, path, value, readonly){
   return `<div class="field"><label>${labelTxt}</label><input data-field="${path}" value="${(value||'').toString().replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>`;
 }
-function rowCardTransporte(t, i, readonly){
-  return `<div class="row-card">
-    <div class="row-card-head"><span class="idx">TRANSPORTE #${i+1}</span>${!readonly?`<button class="row-del" data-delrow="transporte|${t.id}">Eliminar</button>`:''}</div>
-    <div class="grid">
-      <div class="field"><label>Distancia en KM</label><input data-rowfield="transporte|${t.id}|distanciaKm" value="${(t.distanciaKm||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
-      <div class="field"><label>Tiempo de desplazamiento</label><input data-rowfield="transporte|${t.id}|tiempo" value="${(t.tiempo||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
-      <div class="field"><label>Tipo de transporte</label><input data-rowfield="transporte|${t.id}|tipo" value="${(t.tipo||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
-    </div>
-    <div class="field"><label>Observación de transporte</label><input data-rowfield="transporte|${t.id}|observacion" value="${(t.observacion||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
-    <div data-photo-cell="transporte|${t.id}">${photoCellHtml('transporte|'+t.id, t, readonly)}</div>
-  </div>`;
+function dateField(labelTxt, path, value, readonly){
+  return `<div class="field"><label>${labelTxt}</label><input type="datetime-local" data-field="${path}" data-iso="1" value="${value? new Date(value).toISOString().slice(0,16):''}" ${readonly?'disabled':''}></div>`;
+}
+function textareaField(labelTxt, path, value, readonly){
+  return `<div class="field"><label>${labelTxt}</label><textarea data-field="${path}" ${readonly?'disabled':''}>${value||''}</textarea></div>`;
+}
+function siNoField(labelTxt, path, value, readonly){
+  return `<div class="field"><label>${labelTxt}</label><select data-field="${path}" ${readonly?'disabled':''}>
+    <option value="" ${value===''?'selected':''}>Seleccione</option>
+    <option value="SI" ${value==='SI'?'selected':''}>SÍ</option>
+    <option value="NO" ${value==='NO'?'selected':''}>NO</option>
+  </select></div>`;
+}
+function selectField(labelTxt, path, value, options, readonly){
+  return `<div class="field"><label>${labelTxt}</label><select data-field="${path}" ${readonly?'disabled':''}>
+    <option value="" ${!value?'selected':''}>Seleccione</option>
+    ${options.map(o=>`<option value="${o}" ${value===o?'selected':''}>${o}</option>`).join('')}
+  </select></div>`;
 }
 
 function renderLocationPanel(sess, readonly){
@@ -836,20 +579,18 @@ function renderLocationPanel(sess, readonly){
     if(u.lat) return `<div>📍 <a href="${mapLink(u.lat,u.lng)}" target="_blank">${u.lat.toFixed(5)}, ${u.lng.toFixed(5)}</a> — ${fmt(u.timestamp)} <i>(${u.tipo})</i></div>`;
     return `<div>⚠️ Error de ubicación (${u.tipo}) — ${fmt(u.timestamp)}: ${u.error||''}</div>`;
   }).join('') || '<div style="color:var(--muted);">Aún no hay registros de ubicación.</div>';
-
   let actions = '';
   if(!readonly){
     actions = `<div class="row-actions" style="margin-top:8px;">
       <button class="btn secondary small" id="btn-gps-auto">📍 Generar ubicación GPS ahora</button>
     </div>
     <div class="manual-loc">
-      <div class="field"><label>Latitud (manual)</label><input id="manual-lat" placeholder="Ej: 10.41234"></div>
-      <div class="field"><label>Longitud (manual)</label><input id="manual-lng" placeholder="Ej: -75.12345"></div>
+      <div class="field"><label>Latitud (manual)</label><input id="manual-lat" placeholder="Ej: 8.31234"></div>
+      <div class="field"><label>Longitud (manual)</label><input id="manual-lng" placeholder="Ej: -75.4023"></div>
       <button class="btn ghost small" id="btn-gps-manual">➕ Pegar ubicación manual</button>
     </div>`;
   }
-
-  return `<div class="card"><h2>📍 Ubicación GPS del mantenimiento</h2>
+  return `<div class="card"><h2>📍 Ubicación GPS</h2>
     <div class="loc-panel">
       <div>Última ubicación: ${lastLoc ? (lastLoc.lat? `<a href="${mapLink(lastLoc.lat,lastLoc.lng)}" target="_blank">${lastLoc.lat.toFixed(5)}, ${lastLoc.lng.toFixed(5)}</a> (${fmt(lastLoc.timestamp)}, ${lastLoc.tipo})` : `error — ${fmt(lastLoc.timestamp)}`) : 'aún sin registrar'}</div>
       ${actions}
@@ -858,52 +599,11 @@ function renderLocationPanel(sess, readonly){
   </div>`;
 }
 
-function renderSitioCheck(sess){
-  if(!sess) return `<div class="card"><div class="empty">Sesión no encontrada.</div></div>`;
-  const nombre = sess.general.nombreEstacion || '';
-  const val = getUbicacionValidacion(sess);
-  const bloqueado = val.estado === 'bloqueado';
-  const puedeContinuar = nombre.trim().length>0 && !bloqueado;
-
-  let statusHtml = '';
-  if(!nombre.trim()){
-    statusHtml = `<p class="hint" style="margin:0;">Escribe el nombre del sitio para validar tu ubicación.</p>`;
-  } else if(val.estado==='sin-db'){
-    statusHtml = `<p class="hint" style="margin:0;">No hay una base de datos de sitios cargada — se puede continuar sin validar la ubicación.</p>`;
-  } else if(val.estado==='no-encontrado'){
-    statusHtml = `<div class="card" style="border-color:#e0a800;background:#fff8e8;margin:10px 0 0;"><p class="hint" style="margin:0;color:#7a5c00;">⚠️ "${nombre}" no se encontró en la base de datos de sitios — no se puede validar la ubicación, pero puedes continuar.</p></div>`;
-  } else if(val.estado==='sin-gps'){
-    statusHtml = `<div class="card" style="border-color:#e0a800;background:#fff8e8;margin:10px 0 0;"><p class="hint" style="margin:0;color:#7a5c00;">⏳ Buscando tu ubicación GPS para validar la distancia al sitio "${val.sitio.nombre}"...</p></div>`;
-  } else if(val.estado==='ok'){
-    statusHtml = `<div class="card" style="border-color:#1e8a4c;background:#e5f6ea;margin:10px 0 0;"><p class="hint" style="margin:0;color:#1e8a4c;">✅ Ubicación validada — estás a ${Math.round(val.dist)} m del sitio "${val.sitio.nombre}" (máximo permitido: ${SITIO_DIST_MAX_M} m). Puedes continuar.</p></div>`;
-  } else if(bloqueado){
-    statusHtml = `<div class="card" style="border:2px solid var(--bad);background:#fbe7e6;margin:10px 0 0;">
-      <h2 style="border:none;color:var(--bad);margin:0 0 6px;">🚫 No puedes continuar todavía</h2>
-      <p style="margin:0 0 4px;color:#7a1410;font-size:13px;">Estás a <b>${Math.round(val.dist)} m</b> del sitio "<b>${val.sitio.nombre}</b>" registrado en la base de datos (máximo permitido: ${SITIO_DIST_MAX_M} m).</p>
-      <p style="margin:0;color:#7a1410;font-size:13px;">Verifica que el nombre esté bien escrito, o acércate a la ubicación correcta. Esta pantalla se revisa sola cada vez que el GPS actualiza tu posición.</p>
-    </div>`;
-  }
-
-  return `<div class="card">
-    <h2>OT ${sess.id} — Nombre del sitio</h2>
-    <p class="hint">Ingresa el nombre del sitio o estación base. Si está en la base de datos, se comparará tu ubicación GPS actual contra las coordenadas registradas antes de dejarte continuar con el resto del formulario.</p>
-    <div class="field"><label>Nombre del sitio / estación base</label>
-      <input id="sitio-nombre-input" placeholder="Ej: Suc.sehebe" value="${nombre.replace(/"/g,'&quot;')}">
-    </div>
-    ${statusHtml}
-  </div>
-  ${renderLocationPanel(sess, false)}
-  <div class="row-actions">
-    <button class="btn" id="btn-continuar-sitio" ${puedeContinuar?'':'disabled'}>Continuar al formulario →</button>
-    <button class="btn ghost" data-nav="home">← Volver al inicio</button>
-  </div>`;
-}
-
 function renderForm(sess, readonly){
   if(!sess) return `<div class="card"><div class="empty">Sesión no encontrada.</div></div>`;
-  const g = sess.general, p = sess.planta;
+  const g=sess.general, a=sess.actividad;
   let html = '';
-  if(readonly) html += `<div class="readonly-note">👁️ Estás viendo esta OT en modo solo lectura (supervisor). Puedes revisar cada evidencia fotográfica tocándola. Se actualiza automáticamente.</div>`;
+  if(readonly) html += `<div class="readonly-note">👁️ Estás viendo esta OT en modo solo lectura (supervisor). Se actualiza automáticamente.</div>`;
 
   html += `<div class="card"><h2>OT ${sess.id} <span class="status-pill ${sess.status}" style="margin-left:8px;">${sess.status==='en_progreso'?'En progreso':'Finalizado'}</span></h2>
     ${readonly?`<div class="row-actions"><button class="btn secondary small" data-pdf="${sess.id}">⬇️ PDF</button>${isMasterAdmin()?`<button class="btn danger small" data-delete="${sess.id}">🗑️ Borrar</button>`:''}</div>`:''}
@@ -911,173 +611,88 @@ function renderForm(sess, readonly){
 
   html += renderLocationPanel(sess, readonly);
 
-  html += `<div class="card"><h2>LISTA DE CHEQUEO GENERAL PLANTA</h2>
-    <p class="hint">Toca 📷 para tomar la foto en el momento con la cámara, o 🖼️ para adjuntar una foto ya guardada.</p>
-    <div class="ident-grid">
-    ${IDENT_ITEMS.map((item,i)=>`
-      <div class="ident-item">
-        <div class="ident-label">${i+1}. ${item}</div>
-        <div data-photo-cell="__ident:${i}">${photoCellHtml('__ident:'+i, sess.identificacion[i], readonly)}</div>
-      </div>`).join('')}
-    </div>
+  html += `<div class="card"><h2>1. Información general</h2><div class="grid">
+    ${textField('Nombre de estación', 'general.nombreEstacion', g.nombreEstacion, readonly)}
+    ${textField('Categoría', 'general.categoria', g.categoria, readonly)}
+    ${selectField('Regional', 'general.regional', g.regional, ['R1','R2'], readonly)}
+    ${textField('Responsable', 'general.responsable', g.responsable, readonly)}
+    ${selectField('Departamento', 'general.departamento', g.departamento, ['ATLANTICO','BOLIVAR','SUCRE','CORDOBA'], readonly)}
+    ${textField('No. INC', 'general.noInc', g.noInc, readonly)}
+    ${textField('No. TAS', 'general.noTas', g.noTas, readonly)}
+    ${textField('Tipo de estación', 'general.tipoEstacion', g.tipoEstacion, readonly)}
+    ${textField('Tipo de sitio', 'general.tipoSitio', g.tipoSitio, readonly)}
+    ${textField('Site owner', 'general.siteOwner', g.siteOwner, readonly)}
+    ${dateField('Fecha ejecución', 'general.fechaEjecucion', g.fechaEjecucion, readonly)}
+    ${dateField('Fecha fin actividad', 'general.fechaFin', g.fechaFin, readonly)}
+  </div>
+  ${textareaField('Dirección o ubicación', 'general.direccion', g.direccion, readonly)}
   </div>`;
 
-  html += `<div class="card"><h2>1. Información general del sitio</h2><div class="grid">
-    ${textField('Nombre estación base','general.nombreEstacion',g.nombreEstacion,readonly)}
-    ${textField('Dirección / Ubicación','general.direccion',g.direccion,readonly)}
-    ${textField('Jefatura','general.jefatura',g.jefatura,readonly)}
-    ${textField('Site owner','general.siteOwner',g.siteOwner,readonly)}
-    ${textField('Zona O&M','general.zona',g.zona,readonly)}
-    ${textField('Región','general.region',g.region,readonly)}
-    ${textField('Modalidad','general.modalidad',g.modalidad,readonly)}
-    ${textField('ODH','general.odh',g.odh,readonly)}
-    ${textField('Responsable Téc. 1','general.responsableTec1',g.responsableTec1,readonly)}
-    ${textField('Responsable Téc. 2','general.responsableTec2',g.responsableTec2,readonly)}
-    ${textField('Empresa aliado','general.empresaAliado',g.empresaAliado,readonly)}
+  html += `<div class="card"><h2>2. Información de la actividad</h2><div class="grid">
+    ${textField('Tipo de actividad', 'actividad.tipoActividad', a.tipoActividad, readonly)}
+    ${textField('Tipo de equipo en falla', 'actividad.tipoEquipoFalla', a.tipoEquipoFalla, readonly)}
+    ${textField('Subsistema', 'actividad.subsistema', a.subsistema, readonly)}
+    ${textField('Modelo', 'actividad.modelo', a.modelo, readonly)}
+  </div><div class="grid">
+    ${siNoField('¿Presenta afectación de servicios?', 'actividad.afectacionServicios', a.afectacionServicios, readonly)}
+    ${siNoField('Reinstalación', 'actividad.reinstalacion', a.reinstalacion, readonly)}
+    ${siNoField('Cambio', 'actividad.cambio', a.cambio, readonly)}
+    ${siNoField('Reparación', 'actividad.reparacion', a.reparacion, readonly)}
   </div></div>`;
 
-  if(!readonly){
-    const val = getUbicacionValidacion(sess);
-    if(val.estado==='no-encontrado'){
-      html += `<div class="card" style="border-color:#e0a800;background:#fff8e8;"><p class="hint" style="margin:0;color:#7a5c00;">⚠️ El nombre "${g.nombreEstacion}" no se encontró en la base de datos de sitios — no se puede validar la ubicación. Verifica que esté escrito igual que en la base de datos, o contacta al administrador si el sitio es nuevo.</p></div>`;
-    } else if(val.estado==='sin-gps'){
-      html += `<div class="card" style="border-color:#e0a800;background:#fff8e8;"><p class="hint" style="margin:0;color:#7a5c00;">⏳ Esperando la ubicación GPS del dispositivo para validar la distancia al sitio registrado...</p></div>`;
-    } else if(val.estado==='ok'){
-      html += `<div class="card" style="border-color:#1e8a4c;background:#e5f6ea;"><p class="hint" style="margin:0;color:#1e8a4c;">✅ Ubicación validada — estás a ${Math.round(val.dist)} m del sitio "${val.sitio.nombre}" (máximo permitido: ${SITIO_DIST_MAX_M} m).</p></div>`;
-    } else if(val.estado==='bloqueado'){
-      html += `<div class="card" style="border:2px solid var(--bad);background:#fbe7e6;">
-        <h2 style="border:none;color:var(--bad);margin:0 0 6px;">🚫 Formato bloqueado por ubicación</h2>
-        <p style="margin:0 0 4px;color:#7a1410;font-size:13px;">Estás a <b>${Math.round(val.dist)} m</b> del sitio "<b>${val.sitio.nombre}</b>" registrado en la base de datos (máximo permitido: ${SITIO_DIST_MAX_M} m).</p>
-        <p style="margin:0;color:#7a1410;font-size:13px;">Verifica que el nombre de la estación esté bien escrito, o acércate a la ubicación correcta. El resto del formulario permanece bloqueado — se revisa automáticamente cada vez que el GPS actualiza tu posición.</p>
-      </div>`;
-      html += `<div class="row-actions"><button class="btn ghost" id="btn-volver">← Volver al inicio</button></div>`;
-      return html;
-    }
-  }
+  html += `<div class="card"><h2>3. Descripción de la falla</h2>${textareaField('', 'descripcionFalla', sess.descripcionFalla, readonly)}</div>`;
+  html += `<div class="card"><h2>4. Descripción de la solución</h2>${textareaField('', 'descripcionSolucion', sess.descripcionSolucion, readonly)}</div>`;
 
-  html += `<div class="card"><h2>2. Datos principales de la planta</h2><div class="grid">
-    ${textField('Marca equipo','planta.marca',p.marca,readonly)}
-    ${textField('Modelo','planta.modelo',p.modelo,readonly)}
-    ${textField('Serial','planta.serial',p.serial,readonly)}
-    ${textField('Horas de trabajo','planta.horasTrabajo',p.horasTrabajo,readonly)}
-    ${textField('Frecuencia (Hz)','planta.frecuenciaHz',p.frecuenciaHz,readonly)}
-    ${textField('Capacidad KVA','planta.capacidadKVA',p.capacidadKVA,readonly)}
-    ${textField('Capacidad KW','planta.capacidadKW',p.capacidadKW,readonly)}
-    ${textField('% Derrateo','planta.derrateo',p.derrateo,readonly)}
-    ${textField('Velocidad (RPM)','planta.velocidadRpm',p.velocidadRpm,readonly)}
-    ${textField('Marca motor','planta.marcaMotor',p.marcaMotor,readonly)}
-    ${textField('Modelo motor','planta.modeloMotor',p.modeloMotor,readonly)}
-    ${textField('Serial motor','planta.serialMotor',p.serialMotor,readonly)}
-    ${textField('Presión de aceite','planta.presionAceite',p.presionAceite,readonly)}
-    ${textField('Temp. aceite','planta.tempAceite',p.tempAceite,readonly)}
-    ${textField('Temp. refrigerante','planta.tempRefrigerante',p.tempRefrigerante,readonly)}
-    ${textField('Marca generador','planta.marcaGenerador',p.marcaGenerador,readonly)}
-    ${textField('Modelo generador','planta.modeloGenerador',p.modeloGenerador,readonly)}
-    ${textField('Serial generador','planta.serialGenerador',p.serialGenerador,readonly)}
-    ${textField('Voltaje batería','planta.voltajeBateria',p.voltajeBateria,readonly)}
-    ${textField('Tipo de batería','planta.tipoBateria',p.tipoBateria,readonly)}
-    ${textField('Estado cargador','planta.estadoCargador',p.estadoCargador,readonly)}
-    ${textField('VAC L1-L2','planta.vacL1L2',p.vacL1L2,readonly)}
-    ${textField('VAC L1-L3','planta.vacL1L3',p.vacL1L3,readonly)}
-    ${textField('VAC L2-L3','planta.vacL2L3',p.vacL2L3,readonly)}
-    ${textField('Amperios L1','planta.ampL1',p.ampL1,readonly)}
-    ${textField('Amperios L2','planta.ampL2',p.ampL2,readonly)}
-    ${textField('Amperios L3','planta.ampL3',p.ampL3,readonly)}
-    ${textField('Temp. ambiente','planta.tempAmbiente',p.tempAmbiente,readonly)}
-    ${textField('% Carga planta','planta.cargaPlanta',p.cargaPlanta,readonly)}
-    ${textField('Admisión de aire','planta.admisionAire',p.admisionAire,readonly)}
-  </div></div>`;
+  html += `<div class="card"><h2>5. Cambio de repuestos y/o partes</h2>
+    <div class="subhead">Repuestos retirados</div>
+    ${sess.repuestosRetirados.map((r,i)=>rowCardRepuesto('repuestosRetirados',r,i,readonly)).join('') || (readonly?'<p class="hint">Sin repuestos retirados.</p>':'')}
+    ${!readonly?`<button class="add-row-btn" data-addrow="repuestosRetirados">+ Agregar repuesto retirado</button>`:''}
+    <div class="subhead">Repuestos instalados</div>
+    ${sess.repuestosInstalados.map((r,i)=>rowCardRepuesto('repuestosInstalados',r,i,readonly)).join('') || (readonly?'<p class="hint">Sin repuestos instalados.</p>':'')}
+    ${!readonly?`<button class="add-row-btn" data-addrow="repuestosInstalados">+ Agregar repuesto instalado</button>`:''}
+  </div>`;
 
-  html += `<div class="card"><h2>3. Lista de chequeo general de planta</h2>
-    <p class="hint">Toca 📷 para tomar la foto en el momento con la cámara, o 🖼️ para adjuntar una foto ya guardada. Toca una miniatura para verla en grande.</p>`;
-  CHECKLIST_SECTIONS.forEach(sec=>{
-    const malos = sess.checklist[sec.key].filter(e=>e.estado==='MALO').length;
-    const fotos = sess.checklist[sec.key].filter(e=>e.foto).length;
-    html += `<div class="section-toggle" data-toggle="sec-${sec.key}">
-      <h3 style="margin:0;">${sec.title}</h3>
-      <span class="badge">${sec.items.length} ítems · ${fotos} con foto ${malos?`· ${malos} hallazgo`:''}</span>
-      <span class="chevron">▶</span>
-    </div>
-    <div class="section-body" id="sec-${sec.key}">
-      <table><thead><tr><th>Componente</th><th style="width:110px;">Estado</th><th class="foto-col">Evidencia</th></tr></thead><tbody>
-      ${sec.items.map((item,i)=>checklistRow(sec.key,i,item,sess.checklist[sec.key][i],readonly)).join('')}
-      </tbody></table>
-    </div>`;
-  });
-  html += `</div>`;
+  html += `<div class="card"><h2>6. Listado de materiales utilizados</h2>
+    ${sess.materiales.map((m,i)=>rowCardMaterial(m,i,readonly)).join('') || (readonly?'<p class="hint">Sin materiales registrados.</p>':'')}
+    ${!readonly?`<button class="add-row-btn" data-addrow="materiales">+ Agregar material</button>`:''}
+  </div>`;
 
-  html += `<div class="card"><h2>4. Prueba realizada</h2>
-    <table><thead><tr><th>Prueba</th><th style="width:110px;">Estado</th><th class="foto-col">Evidencia</th></tr></thead><tbody>
-    ${PRUEBAS_ITEMS.map((item,i)=>checklistRow('__pruebas',i,item,sess.pruebas[i],readonly)).join('')}
-    </tbody></table></div>`;
+  html += `<div class="card"><h2>7. Evidencia fotográfica de la actividad</h2>
+    <p class="hint">Agrega cada foto con su propio título (ej: "Panorámica del transformador").</p>
+    ${sess.evidencias.map((e,i)=>rowCardEvidencia(e,i,readonly)).join('') || (readonly?'<p class="hint">Sin evidencias registradas.</p>':'')}
+    ${!readonly?`<button class="add-row-btn" data-addrow="evidencias">+ Agregar evidencia fotográfica</button>`:''}
+  </div>`;
 
-  html += `<div class="card"><h2>5. Servicio de filtración</h2>
-    <table><thead><tr><th>Servicio</th><th style="width:110px;">Estado</th><th>Observación</th><th class="foto-col">Evidencia</th></tr></thead><tbody>
-    ${FILTRACION_ITEMS.map((item,i)=>filtracionRow(i,item,sess.filtracion[i],readonly)).join('')}
-    </tbody></table></div>`;
-
-  html += `<div class="card"><h2>6. Hallazgos y cierre</h2>
-    <div class="field"><label>¿Se encontraron novedades en la estación?</label>
-      <select data-field="hallazgoSi" ${readonly?'disabled':''}>
-        <option value="" ${sess.hallazgoSi===''?'selected':''}>Seleccione</option>
-        <option value="Si" ${sess.hallazgoSi==='Si'?'selected':''}>Sí</option>
-        <option value="No" ${sess.hallazgoSi==='No'?'selected':''}>No</option>
-      </select>
-    </div>
-    ${sess.hallazgoSi==='Si' ? `
-      <div class="field"><label>Observaciones de los hallazgos</label><textarea data-field="hallazgosObservaciones" ${readonly?'disabled':''}>${sess.hallazgosObservaciones||''}</textarea></div>
+  html += `<div class="card"><h2>8. Hallazgos</h2>
+    ${siNoField('¿Se encontraron novedades en la estación?', 'hallazgoSi', sess.hallazgoSi, readonly)}
+    ${sess.hallazgoSi==='SI' ? `
+      ${textareaField('Observaciones de los hallazgos', 'hallazgosObservaciones', sess.hallazgosObservaciones, readonly)}
       <div class="subhead">Registro fotográfico de hallazgos</div>
-      ${(sess.hallazgosFotos||[]).map((f,i)=>`
-        <div class="row-card">
-          <div class="row-card-head"><span class="idx">FOTO #${i+1}</span>${!readonly?`<button class="row-del" data-delhallazgorow="hallazgosFotos|${f.id}">Eliminar</button>`:''}</div>
-          <div data-photo-cell="hallazgosFotos|${f.id}">${photoCellHtml('hallazgosFotos|'+f.id, f, readonly)}</div>
-        </div>`).join('') || (readonly?'<p class="hint">Sin fotos registradas.</p>':'')}
-      ${!readonly?`<button class="add-row-btn" data-addhallazgorow="hallazgosFotos">+ Agregar foto (cámara o archivo)</button>`:''}
+      ${(sess.hallazgosFotos||[]).map((f,i)=>rowCardHallazgoFoto(f,i,readonly)).join('') || (readonly?'<p class="hint">Sin fotos registradas.</p>':'')}
+      ${!readonly?`<button class="add-row-btn" data-addrow="hallazgosFotos">+ Agregar foto (cámara o archivo)</button>`:''}
       <div class="subhead">Detalle por hallazgo</div>
-      ${(sess.hallazgosDetalle||[]).map((h,i)=>`
-        <div class="row-card">
-          <div class="row-card-head"><span class="idx">HALLAZGO #${i+1}</span>${!readonly?`<button class="row-del" data-delhallazgorow="hallazgosDetalle|${h.id}">Eliminar</button>`:''}</div>
-          <div class="grid">
-            <div class="field"><label>Sistema</label><input data-hrowfield="${h.id}|sistema" value="${(h.sistema||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
-            <div class="field"><label>Prioridad</label><select data-hrowfield="${h.id}|prioridad" ${readonly?'disabled':''}>
-              <option ${h.prioridad==='Alta'?'selected':''}>Alta</option><option ${h.prioridad==='Media'?'selected':''}>Media</option><option ${h.prioridad==='Baja'?'selected':''}>Baja</option>
-            </select></div>
-          </div>
-          <div class="field"><label>Descripción</label><textarea data-hrowfield="${h.id}|descripcion" ${readonly?'disabled':''}>${h.descripcion||''}</textarea></div>
-          <div class="field"><label>¿Resuelto en la visita?</label><select data-hrowfield="${h.id}|resuelto" ${readonly?'disabled':''}>
-            <option value="" ${h.resuelto===''?'selected':''}>Seleccione</option>
-            <option value="Si" ${h.resuelto==='Si'?'selected':''}>Sí</option>
-            <option value="No" ${h.resuelto==='No'?'selected':''}>No</option>
-          </select></div>
-          <div data-photo-cell="hallazgosDetalle|${h.id}">${photoCellHtml('hallazgosDetalle|'+h.id, h, readonly)}</div>
-        </div>`).join('') || (readonly?'<p class="hint">Sin hallazgos registrados.</p>':'')}
-      ${!readonly?`<button class="add-row-btn" data-addhallazgorow="hallazgosDetalle">+ Agregar hallazgo</button>`:''}
+      ${sess.hallazgos.map((h,i)=>rowCardHallazgo(h,i,readonly)).join('') || (readonly?'<p class="hint">Sin hallazgos registrados.</p>':'')}
+      ${!readonly?`<button class="add-row-btn" data-addrow="hallazgos">+ Agregar hallazgo</button>`:''}
     ` : ''}
-    <div class="subhead">Cierre</div>
-    <div class="field"><label>Resumen técnico</label><textarea data-field="hallazgos.resumenTecnico" ${readonly?'disabled':''}>${sess.hallazgos.resumenTecnico}</textarea></div>
-    <div class="field"><label>Recomendaciones</label><textarea data-field="hallazgos.recomendaciones" ${readonly?'disabled':''}>${sess.hallazgos.recomendaciones}</textarea></div>
-    <div class="grid"><div class="field"><label>Estado final del equipo</label>
-      <select data-field="hallazgos.estadoFinal" ${readonly?'disabled':''}>
-        <option ${sess.hallazgos.estadoFinal==='OPERATIVO'?'selected':''}>OPERATIVO</option>
-        <option ${sess.hallazgos.estadoFinal==='NO OPERATIVO'?'selected':''}>NO OPERATIVO</option>
-        <option ${sess.hallazgos.estadoFinal==='OPERATIVO CON HALLAZGOS'?'selected':''}>OPERATIVO CON HALLAZGOS</option>
-      </select>
-    </div></div>
   </div>`;
 
-  html += `<div class="card"><h2>7. Transporte especiales</h2>
+  html += `<div class="card"><h2>9. Transporte especiales</h2>
     ${sess.transporte.map((t,i)=>rowCardTransporte(t,i,readonly)).join('') || (readonly?'<p class="hint">No aplica.</p>':'')}
     ${!readonly?`<button class="add-row-btn" data-addrow="transporte">+ Agregar transporte especial</button>`:''}
   </div>`;
 
-  html += `<div class="card"><h2>8. Firma y responsables</h2><div class="grid">
-    ${textField('Nombre quien ejecuta','firma.ejecuta',sess.firma.ejecuta,readonly)}
-    ${textField('C.C.','firma.cc',sess.firma.cc,readonly)}
-    ${textField('Nombre quien revisa','firma.revisa',sess.firma.revisa,readonly)}
-    ${textField('Empresa quien ejecuta','firma.empresa',sess.firma.empresa,readonly)}
-  </div></div>`;
+  html += `<div class="card"><h2>10. Cierre</h2>
+    ${siNoField('¿Falla resuelta?', 'fallaResuelta', sess.fallaResuelta, readonly)}
+    ${textareaField('Observaciones de la actividad', 'observaciones', sess.observaciones, readonly)}
+    <div class="grid">
+      ${textField('Nombre del personal quien ejecuta', 'firma.ejecuta', sess.firma.ejecuta, readonly)}
+      ${textField('Empresa quien ejecuta', 'firma.empresa', sess.firma.empresa, readonly)}
+      ${textField('Nombre del quien revisa', 'firma.revisa', sess.firma.revisa, readonly)}
+      ${textField('Fecha de elaboración', 'firma.fechaElaboracion', sess.firma.fechaElaboracion, readonly)}
+    </div>
+  </div>`;
 
-  html += `<div class="card"><h2>9. Videos de soporte</h2>
+  html += `<div class="card"><h2>11. Videos de soporte</h2>
     <p class="hint">Hasta 4 videos, máximo 20 MB cada uno. Quedan guardados en este dispositivo y se sincronizan al servidor para que el supervisor pueda revisarlos.</p>
     ${(sess.videos||[]).map((v,i)=>`
       <div class="row-card">
@@ -1092,7 +707,7 @@ function renderForm(sess, readonly){
 
   if(!readonly){
     html += `<div class="row-actions">
-      ${sess.status==='en_progreso'?`<button class="btn" id="btn-finalizar">✅ Finalizar mantenimiento</button>`:''}
+      ${sess.status==='en_progreso'?`<button class="btn" id="btn-finalizar">✅ Finalizar atención</button>`:''}
       <button class="btn secondary" id="btn-dl-pdf">⬇️ Descargar PDF</button>
       ${isMasterAdmin()?`<button class="btn danger" id="btn-delete-current">🗑️ Borrar (admin maestro)</button>`:''}
       <button class="btn ghost" id="btn-volver">← Volver al inicio</button>
@@ -1103,30 +718,96 @@ function renderForm(sess, readonly){
   return html;
 }
 
-// ---------- collect photos ----------
+function rowCardRepuesto(arrName, r, i, readonly){
+  return `<div class="row-card">
+    <div class="row-card-head"><span class="idx">#${i+1}</span>${!readonly?`<button class="row-del" data-delrow="${arrName}|${r.id}">Eliminar</button>`:''}</div>
+    <div class="grid">
+      <div class="field"><label>Descripción</label><input data-rowfield="${arrName}|${r.id}|descripcion" value="${(r.descripcion||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Marca</label><input data-rowfield="${arrName}|${r.id}|marca" value="${(r.marca||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Modelo</label><input data-rowfield="${arrName}|${r.id}|modelo" value="${(r.modelo||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Serial</label><input data-rowfield="${arrName}|${r.id}|serial" value="${(r.serial||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+    </div>
+  </div>`;
+}
+function rowCardMaterial(m, i, readonly){
+  return `<div class="row-card">
+    <div class="row-card-head"><span class="idx">MATERIAL #${i+1}</span>${!readonly?`<button class="row-del" data-delrow="materiales|${m.id}">Eliminar</button>`:''}</div>
+    <div class="grid">
+      <div class="field"><label>Cantidad</label><input data-rowfield="materiales|${m.id}|cantidad" value="${(m.cantidad||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Unidad</label><input data-rowfield="materiales|${m.id}|unidad" value="${(m.unidad||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field" style="grid-column:1/-1;"><label>Descripción</label><input data-rowfield="materiales|${m.id}|descripcion" value="${(m.descripcion||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+    </div>
+    <div class="grid" style="margin-top:6px;">
+      <div data-photo-cell="materiales|${m.id}|fotoAntes">${photoCellHtml('materiales|'+m.id+'|fotoAntes', m.fotoAntes, readonly, 'Evidencia antes')}</div>
+      <div data-photo-cell="materiales|${m.id}|fotoDespues">${photoCellHtml('materiales|'+m.id+'|fotoDespues', m.fotoDespues, readonly, 'Evidencia después')}</div>
+    </div>
+  </div>`;
+}
+function rowCardEvidencia(e, i, readonly){
+  return `<div class="row-card">
+    <div class="row-card-head"><span class="idx">FOTO #${i+1}</span>${!readonly?`<button class="row-del" data-delrow="evidencias|${e.id}">Eliminar</button>`:''}</div>
+    <div class="field"><label>Título de la evidencia</label><input data-rowfield="evidencias|${e.id}|caption" placeholder="Ej: Panorámica del transformador" value="${(e.caption||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+    <div data-photo-cell="evidencias|${e.id}|foto">${photoCellHtml('evidencias|'+e.id+'|foto', e.foto, readonly, 'Foto')}</div>
+  </div>`;
+}
+function rowCardHallazgoFoto(f, i, readonly){
+  return `<div class="row-card">
+    <div class="row-card-head"><span class="idx">FOTO #${i+1}</span>${!readonly?`<button class="row-del" data-delrow="hallazgosFotos|${f.id}">Eliminar</button>`:''}</div>
+    <div data-photo-cell="hallazgosFotos|${f.id}|foto">${photoCellHtml('hallazgosFotos|'+f.id+'|foto', f.foto, readonly, 'Foto de hallazgo')}</div>
+  </div>`;
+}
+function rowCardHallazgo(h, i, readonly){
+  return `<div class="row-card">
+    <div class="row-card-head"><span class="idx">HALLAZGO #${i+1}</span>${!readonly?`<button class="row-del" data-delrow="hallazgos|${h.id}">Eliminar</button>`:''}</div>
+    <div class="grid">
+      <div class="field"><label>Sistema</label><input data-rowfield="hallazgos|${h.id}|sistema" value="${(h.sistema||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Prioridad</label><select data-rowfield="hallazgos|${h.id}|prioridad" ${readonly?'disabled':''}>
+        <option ${h.prioridad==='Alta'?'selected':''}>Alta</option><option ${h.prioridad==='Media'?'selected':''}>Media</option><option ${h.prioridad==='Baja'?'selected':''}>Baja</option>
+      </select></div>
+    </div>
+    <div class="field"><label>Descripción</label><textarea data-rowfield="hallazgos|${h.id}|descripcion" ${readonly?'disabled':''}>${h.descripcion||''}</textarea></div>
+    <div class="field"><label>¿Resuelto en la visita?</label><select data-rowfield="hallazgos|${h.id}|resuelto" ${readonly?'disabled':''}>
+      <option value="" ${h.resuelto===''?'selected':''}>Seleccione</option>
+      <option value="SI" ${h.resuelto==='SI'?'selected':''}>SÍ</option>
+      <option value="NO" ${h.resuelto==='NO'?'selected':''}>NO</option>
+    </select></div>
+    <div data-photo-cell="hallazgos|${h.id}|foto">${photoCellHtml('hallazgos|'+h.id+'|foto', h.foto, readonly, 'Registro fotográfico')}</div>
+  </div>`;
+}
+function rowCardTransporte(t, i, readonly){
+  return `<div class="row-card">
+    <div class="row-card-head"><span class="idx">TRANSPORTE #${i+1}</span>${!readonly?`<button class="row-del" data-delrow="transporte|${t.id}">Eliminar</button>`:''}</div>
+    <div class="grid">
+      <div class="field"><label>Distancia en KM</label><input data-rowfield="transporte|${t.id}|distanciaKm" value="${(t.distanciaKm||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Tiempo de desplazamiento</label><input data-rowfield="transporte|${t.id}|tiempo" value="${(t.tiempo||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+      <div class="field"><label>Tipo de transporte</label><input data-rowfield="transporte|${t.id}|tipo" value="${(t.tipo||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+    </div>
+    <div class="field"><label>Observación de transporte</label><input data-rowfield="transporte|${t.id}|observacion" value="${(t.observacion||'').replace(/"/g,'&quot;')}" ${readonly?'disabled':''}></div>
+    <div data-photo-cell="transporte|${t.id}|foto">${photoCellHtml('transporte|'+t.id+'|foto', t.foto, readonly, 'Foto transporte')}</div>
+  </div>`;
+}
+
+// ---------- photo groups for PDF ----------
 function collectPhotoGroups(sess){
   const groups = [];
-  groups.push({title:'LISTA DE CHEQUEO GENERAL PLANTA', items: IDENT_ITEMS.map((item,i)=>{ const e=sess.identificacion[i]; return {caption:item, dataUrl:e.foto||null}; })});
-  CHECKLIST_SECTIONS.forEach(sec=>{
-    groups.push({
-      title: sec.title,
-      items: sec.items.map((item,i)=>{
-        const e = sess.checklist[sec.key][i];
-        return {caption:item, dataUrl:e.foto||null};
-      })
+  if(sess.evidencias.length) groups.push({title:'Evidencia fotográfica de la actividad', items: sess.evidencias.map(e=>({caption:e.caption||'Evidencia de la actividad', dataUrl:e.foto||null}))});
+  if(sess.materiales.length){
+    const items = [];
+    sess.materiales.forEach((m,i)=>{
+      items.push({caption:`Material ${i+1} (${m.descripcion||'s/n'}) — Antes`, dataUrl:m.fotoAntes||null});
+      items.push({caption:`Material ${i+1} (${m.descripcion||'s/n'}) — Después`, dataUrl:m.fotoDespues||null});
     });
-  });
-  groups.push({title:'4. Prueba realizada', items: PRUEBAS_ITEMS.map((item,i)=>{ const e=sess.pruebas[i]; return {caption:item, dataUrl:e.foto||null}; })});
-  groups.push({title:'5. Servicio de filtración', items: FILTRACION_ITEMS.map((item,i)=>{ const e=sess.filtracion[i]; return {caption:item, dataUrl:e.foto||null}; })});
+    groups.push({title:'Evidencia de materiales utilizados', items});
+  }
   if((sess.hallazgosFotos||[]).length) groups.push({title:'Fotos generales de hallazgos', items: sess.hallazgosFotos.map((f,i)=>({caption:`Foto de hallazgo ${i+1}`, dataUrl:f.foto||null}))});
-  if((sess.hallazgosDetalle||[]).length) groups.push({title:'Registro fotográfico de hallazgos', items: sess.hallazgosDetalle.map((h,i)=>({caption:`Hallazgo ${i+1} — ${h.sistema||'s/n'}`, dataUrl:h.foto||null}))});
-  if((sess.transporte||[]).length) groups.push({title:'Foto transporte especial', items: sess.transporte.map((t,i)=>({caption:`Transporte ${i+1} — ${t.tipo||'s/n'}`, dataUrl:t.foto||null}))});
+  if(sess.hallazgos.length) groups.push({title:'Registro fotográfico de hallazgos', items: sess.hallazgos.map((h,i)=>({caption:`Hallazgo ${i+1} — ${h.sistema||'s/n'}`, dataUrl:h.foto||null}))});
+  if(sess.transporte.length) groups.push({title:'Foto transporte especial', items: sess.transporte.map((t,i)=>({caption:`Transporte ${i+1} — ${t.tipo||'s/n'}`, dataUrl:t.foto||null}))});
   return groups;
 }
 
-// ---------- EXPORT: PDF ----------
+// ---------- EXPORT: PDF helpers ----------
 function drawInfoGrid(doc, startX, startY, pairs, colWidth, rowH, cols){
-  cols = cols || 3;
+  cols = cols || 2;
   let x=startX, y=startY, col=0;
   pairs.forEach(([label,value])=>{
     doc.setDrawColor(215,213,206);
@@ -1160,163 +841,177 @@ function addHeaderFooter(doc){
     doc.setPage(i);
     if(i===1) continue; // la página 1 ya tiene su propio encabezado rojo
     doc.setFontSize(7.5); doc.setTextColor(130,130,130);
-    doc.text(`CLARO COSTA | SMU - Mantenimiento Preventivo Plantas Eléctricas | Generado: ${genDate}`, 14, 8);
+    doc.text(`CLARO / INMEL | O&M - Mantenimiento Correctivo y Emergencias | Generado: ${genDate}`, 14, 8);
     doc.text(`Pág. ${i}`, 196, 8, {align:'right'});
   }
 }
+
+// ---------- EXPORT: PDF ----------
 function generatePDF(sess){
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const marginX = 14, rightX = 196, W = 210;
-  const g = sess.general, p = sess.planta;
-  const headerH = 40;
-  let y = 10;
+  const marginX=14, rightX=196, W=210;
+  const colW = (rightX-marginX)/2;
+  const headerH = 37;
+  let y = 11;
 
   doc.setFillColor(227,6,19);
   doc.roundedRect(marginX, 0, rightX-marginX, headerH, 3, 3, 'F');
 
-  doc.setFontSize(18); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
+  doc.setFontSize(17); doc.setFont(undefined,'bold'); doc.setTextColor(255,255,255);
   doc.text('CLARO / INMEL', W/2, y, {align:'center'});
   y += 7;
-  doc.setFontSize(11);
-  doc.text('PLAN MANTENIMIENTO SISTEMA DEL GRUPO ELECTRÓGENO', W/2, y, {align:'center'});
-  y += 5;
-  doc.setFontSize(8.5); doc.setFont(undefined,'normal');
-  doc.text('PROYECTO SMU', W/2, y, {align:'center'});
-  y += 6;
+  doc.setFontSize(10); doc.setFont(undefined,'normal');
+  doc.text('OPERACIÓN Y MANTENIMIENTO — MANTENIMIENTO CORRECTIVO Y EMERGENCIAS', W/2, y, {align:'center'});
+  y += 7;
   doc.setFontSize(9); doc.setFont(undefined,'bold');
   doc.text(`OT: ${sess.id}`, marginX+10, y);
-  doc.text(`Aliado: ${g.empresaAliado || '—'}`, rightX-10, y, {align:'right'});
+  doc.text(`Empresa: ${sess.firma.empresa || '—'}`, rightX-10, y, {align:'right'});
   doc.setFont(undefined,'normal');
   y += 5;
   doc.setFontSize(7.5);
   doc.text('Jefatura Técnico Integral — Gerencia Técnica Regional', W/2, y, {align:'center'});
   y = headerH + 5;
 
-  const colW2 = (rightX-marginX)/2;
-  y = sectionBar(doc, marginX, y, rightX-marginX, '1.- INFORMACIÓN GENERAL DEL SITIO');
+  y = sectionBar(doc, marginX, y, rightX-marginX, 'INFORMACIÓN GENERAL');
+  const g = sess.general;
   y = drawInfoGrid(doc, marginX, y, [
-    ['Nombre estación base', g.nombreEstacion], ['Orden de trabajo', sess.id],
-    ['Dirección o ubicación', g.direccion], ['Aliado', g.empresaAliado],
-    ['Nombre jefatura', g.jefatura], ['Site owner', g.siteOwner],
-    ['Zona O&M', g.zona], ['Región', g.region],
-    ['Modalidad', g.modalidad], ['ODH', g.odh],
-    ['Responsable téc 1', g.responsableTec1], ['Fecha y hora de atención', fmt(g.fechaInicio)],
-    ['Responsable téc 2', g.responsableTec2], ['Fecha y hora de solución', fmt(g.fechaFin)],
-  ], colW2, 12, 2);
+    ['Nombre de estación', g.nombreEstacion],['Categoría', g.categoria],
+    ['Regional', g.regional],['Responsable', g.responsable],
+    ['Departamento', g.departamento],['No. INC', g.noInc],
+    ['Dirección', g.direccion],['No. TAS', g.noTas],
+    ['Tipo de estación', g.tipoEstacion],['Fecha ejecución', fmt(g.fechaEjecucion)],
+    ['Tipo de sitio', g.tipoSitio],['Fecha fin actividad', fmt(g.fechaFin)],
+    ['Site owner', g.siteOwner],['',''],
+  ], colW, 12);
   y += 3;
 
-  const colW3 = (rightX-marginX)/3;
-  y = sectionBar(doc, marginX, y, rightX-marginX, '2.- DATOS PRINCIPALES DE PLANTAS');
+  y = sectionBar(doc, marginX, y, rightX-marginX, 'INFORMACIÓN DE LA ACTIVIDAD');
+  const a = sess.actividad;
   y = drawInfoGrid(doc, marginX, y, [
-    ['Marca equipo', p.marca], ['Modelo', p.modelo], ['Serial N°', p.serial],
-    ['Horas de trabajo', p.horasTrabajo], ['Frecuencia (Hz)', p.frecuenciaHz], ['Capacidad KVA', p.capacidadKVA],
-    ['Capacidad KW', p.capacidadKW], ['% Derrateo', p.derrateo], ['Velocidad (Rpm)', p.velocidadRpm],
-    ['Marca motor', p.marcaMotor], ['Modelo motor', p.modeloMotor], ['Serial motor', p.serialMotor],
-    ['Presión de aceite', p.presionAceite], ['Temp aceite', p.tempAceite], ['Temp refrigerante', p.tempRefrigerante],
-    ['Marca generador', p.marcaGenerador], ['Modelo generador', p.modeloGenerador], ['Serial generador', p.serialGenerador],
-    ['Voltaje batería', p.voltajeBateria], ['Tipo de batería', p.tipoBateria], ['Estado cargador', p.estadoCargador],
-    ['VAC L1-L2', p.vacL1L2], ['VAC L1-L3', p.vacL1L3], ['VAC L2-L3', p.vacL2L3],
-    ['Amperios L1', p.ampL1], ['Amperios L2', p.ampL2], ['Amperios L3', p.ampL3],
-    ['Temperatura ambiente', p.tempAmbiente], ['% Carga planta', p.cargaPlanta], ['Admisión de aire', p.admisionAire],
-  ], colW3, 12, 3);
+    ['Tipo de actividad', a.tipoActividad],['Tipo de equipo en falla', a.tipoEquipoFalla],
+    ['Subsistema', a.subsistema],['Modelo', a.modelo],
+    ['¿Afectación de servicios?', a.afectacionServicios],['Reinstalación', a.reinstalacion],
+    ['Cambio', a.cambio],['Reparación', a.reparacion],
+  ], colW, 12);
+  y += 3;
+
+  y = sectionBar(doc, marginX, y, rightX-marginX, 'DESCRIPCIÓN DE LA FALLA');
+  doc.setFontSize(8.5); doc.setTextColor(30,30,30);
+  y = wrapText(doc, sess.descripcionFalla || '—', marginX, y, W-28);
+  y += 4;
+  if(y>260){ doc.addPage(); y=15; }
+  y = sectionBar(doc, marginX, y, rightX-marginX, 'DESCRIPCIÓN DE LA SOLUCIÓN');
+  y = wrapText(doc, sess.descripcionSolucion || '—', marginX, y, W-28);
   y += 4;
 
-  CHECKLIST_SECTIONS.forEach((sec, idx)=>{
-    const body = sec.items.map((item,i)=>{
-      const e = sess.checklist[sec.key][i];
-      return [i+1, item, e.estado||'—', e.foto?'Sí':'No', e.causa||'', e.deteccion||'', e.correccion||''];
-    });
-    doc.autoTable({startY: idx===0 ? y+4 : doc.lastAutoTable.finalY+4, head:[[{content:sec.title,colSpan:7}],['#','Componente','Estado','Foto','Causa','Detección','Corrección']],
-      body, theme:'grid', styles:{fontSize:6.5, cellWidth:'wrap'}, headStyles:{fillColor:[40,40,40]},
-      columnStyles:{0:{cellWidth:7},1:{cellWidth:45},2:{cellWidth:16},3:{cellWidth:10},4:{cellWidth:28},5:{cellWidth:28},6:{cellWidth:28}}});
-  });
-
-  const pruebaBody = PRUEBAS_ITEMS.map((item,i)=>{ const e=sess.pruebas[i]; return [i+1,item,e.estado||'—',e.foto?'Sí':'No',e.causa||'',e.deteccion||'',e.correccion||'']; });
-  doc.autoTable({startY:doc.lastAutoTable.finalY+4, head:[['#','Prueba realizada','Estado','Foto','Causa','Detección','Corrección']], body:pruebaBody, theme:'grid', styles:{fontSize:6.5}, headStyles:{fillColor:[40,40,40]}});
-
-  const filtBody = FILTRACION_ITEMS.map((item,i)=>{ const e=sess.filtracion[i]; return [i+1,item,e.estado||'—',e.foto?'Sí':'No',e.observacion||'']; });
-  doc.autoTable({startY:doc.lastAutoTable.finalY+4, head:[['#','Servicio de filtración','Estado','Foto','Observación']], body:filtBody, theme:'grid', styles:{fontSize:7}, headStyles:{fillColor:[40,40,40]}});
-
-  y = doc.lastAutoTable.finalY + 8;
-  if(y>260){ doc.addPage(); y=15; }
-  doc.setFontSize(10); doc.setTextColor(227,6,19); doc.text('Hallazgos y cierre', 14, y); y+=6;
-  doc.setFontSize(8.5); doc.setTextColor(30,30,30);
-  y = wrapText(doc, `¿Se encontraron novedades en la estación? ${sess.hallazgoSi||'—'}`, 14, y, W-28);
-  if(sess.hallazgoSi==='Si'){
-    y = wrapText(doc, `Observaciones de los hallazgos: ${sess.hallazgosObservaciones||'—'}`, 14, y+2, W-28);
-    if((sess.hallazgosDetalle||[]).length){
-      y += 3;
-      if(y>260){ doc.addPage(); y=15; }
-      doc.autoTable({startY:y, head:[['#','Sistema','Prioridad','Descripción','Resuelto en visita']],
-        body:sess.hallazgosDetalle.map((h,i)=>[i+1,h.sistema||'—',h.prioridad,h.descripcion||'—',h.resuelto||'—']),
+  if(sess.repuestosRetirados.length || sess.repuestosInstalados.length){
+    if(y>240){ doc.addPage(); y=15; }
+    y = sectionBar(doc, marginX, y, rightX-marginX, 'CAMBIO DE REPUESTOS Y/O PARTES');
+    if(sess.repuestosRetirados.length){
+      doc.autoTable({startY:y, head:[['Repuestos retirados — Descripción','Marca','Modelo','Serial']],
+        body:sess.repuestosRetirados.map(r=>[r.descripcion||'—',r.marca||'—',r.modelo||'—',r.serial||'—']),
+        theme:'grid', styles:{fontSize:7.5}, headStyles:{fillColor:[40,40,40]}});
+      y = doc.lastAutoTable.finalY+3;
+    }
+    if(sess.repuestosInstalados.length){
+      doc.autoTable({startY:y, head:[['Repuestos instalados — Descripción','Marca','Modelo','Serial']],
+        body:sess.repuestosInstalados.map(r=>[r.descripcion||'—',r.marca||'—',r.modelo||'—',r.serial||'—']),
         theme:'grid', styles:{fontSize:7.5}, headStyles:{fillColor:[40,40,40]}});
       y = doc.lastAutoTable.finalY+4;
     }
   }
-  y += 2;
-  if(y>260){ doc.addPage(); y=15; }
-  y = wrapText(doc, `Resumen técnico: ${sess.hallazgos.resumenTecnico||'—'}`, 14, y, W-28);
-  y = wrapText(doc, `Recomendaciones: ${sess.hallazgos.recomendaciones||'—'}`, 14, y+2, W-28);
-  y = wrapText(doc, `Estado final del equipo: ${sess.hallazgos.estadoFinal}`, 14, y+2, W-28);
 
-  if((sess.transporte||[]).length){
-    y += 6;
+  if(sess.materiales.length){
     if(y>240){ doc.addPage(); y=15; }
-    y = sectionBar(doc, 14, y, W-28, 'TRANSPORTE ESPECIALES');
+    y = sectionBar(doc, marginX, y, rightX-marginX, 'LISTADO DE MATERIALES UTILIZADOS');
+    doc.autoTable({startY:y, head:[['Cantidad','Unidad','Descripción','Evidencia']],
+      body:sess.materiales.map(m=>[m.cantidad||'—',m.unidad||'—',m.descripcion||'—', (m.fotoAntes?'Antes ✓ ':'Antes — ')+(m.fotoDespues?'Después ✓':'Después —')]),
+      theme:'grid', styles:{fontSize:7.5}, headStyles:{fillColor:[40,40,40]}});
+    y = doc.lastAutoTable.finalY+4;
+  }
+
+  if(sess.hallazgos.length || sess.hallazgoSi){
+    if(y>240){ doc.addPage(); y=15; }
+    y = sectionBar(doc, marginX, y, rightX-marginX, 'HALLAZGOS');
+    doc.setFontSize(8); doc.setTextColor(30,30,30);
+    y = wrapText(doc, `¿Se encontraron novedades en la estación? ${sess.hallazgoSi||'—'}`, marginX, y, W-28);
+    if(sess.hallazgoSi==='SI'){
+      y = wrapText(doc, `Observaciones de los hallazgos: ${sess.hallazgosObservaciones||'—'}`, marginX, y+2, W-28);
+    }
+    y += 2;
+    if(sess.hallazgos.length){
+      doc.autoTable({startY:y, head:[['#','Sistema','Prioridad','Descripción','Resuelto en visita']],
+        body:sess.hallazgos.map((h,i)=>[i+1,h.sistema||'—',h.prioridad,h.descripcion||'—',h.resuelto||'—']),
+        theme:'grid', styles:{fontSize:7.5}, headStyles:{fillColor:[40,40,40]}});
+      y = doc.lastAutoTable.finalY+4;
+    }
+  }
+
+  if(sess.transporte.length){
+    if(y>240){ doc.addPage(); y=15; }
+    y = sectionBar(doc, marginX, y, rightX-marginX, 'TRANSPORTE ESPECIALES');
     doc.autoTable({startY:y, head:[['Distancia KM','Tiempo desplazamiento','Tipo transporte','Observación']],
       body:sess.transporte.map(t=>[t.distanciaKm||'—',t.tiempo||'—',t.tipo||'—',t.observacion||'—']),
       theme:'grid', styles:{fontSize:7.5}, headStyles:{fillColor:[40,40,40]}});
     y = doc.lastAutoTable.finalY+4;
   }
 
-  y += 6;
-  if(y>260){ doc.addPage(); y=15; }
-  doc.setFontSize(10); doc.setTextColor(227,6,19); doc.text('Firma y responsables', 14, y); y+=6;
-  doc.setFontSize(8.5); doc.setTextColor(30,30,30);
-  y = wrapText(doc, `Ejecuta: ${sess.firma.ejecuta||'—'}   C.C.: ${sess.firma.cc||'—'}`, 14, y, W-28);
-  y = wrapText(doc, `Revisa: ${sess.firma.revisa||'—'}   Empresa: ${sess.firma.empresa||'—'}`, 14, y+2, W-28);
-
   const ubicBody = sess.ubicaciones.map(u=>[u.tipo, u.lat? u.lat.toFixed(5):'—', u.lng? u.lng.toFixed(5):'—', fmt(u.timestamp), u.error||'']);
   if(ubicBody.length){
-    doc.autoTable({startY:y+6, head:[['Tipo','Latitud','Longitud','Fecha/Hora','Error']], body:ubicBody, theme:'grid', styles:{fontSize:7.5}, headStyles:{fillColor:[40,40,40]}});
+    if(y>240){ doc.addPage(); y=15; }
+    doc.autoTable({startY:y, head:[['Ubicación GPS','Latitud','Longitud','Fecha/Hora','Error']], body:ubicBody, theme:'grid', styles:{fontSize:7}, headStyles:{fillColor:[40,40,40]}});
+    y = doc.lastAutoTable.finalY+4;
   }
 
-  const photoGroups = collectPhotoGroups(sess);
-  if(photoGroups.length){
-    doc.addPage();
-    doc.setFontSize(12); doc.setTextColor(227,6,19);
-    doc.text('Soportes de Mantenimiento (Anexos Fotográficos)', 14, 15);
-    const boxW=58, imgH=43.5, rowH=58;
-    let py=24;
-    photoGroups.forEach(group=>{
-      if(py>266){ doc.addPage(); py=15; }
-      doc.setFontSize(9.5); doc.setTextColor(20,20,20);
-      doc.setFont(undefined,'bold');
-      doc.text(group.title, 14, py);
-      doc.setFont(undefined,'normal');
-      py += 2.5;
-      doc.setDrawColor(227,6,19); doc.setLineWidth(0.5);
-      doc.line(14, py, 196, py);
-      py += 6;
+  if(y>250){ doc.addPage(); y=15; }
+  doc.setFontSize(9); doc.setTextColor(30,30,30); doc.setFont(undefined,'bold');
+  doc.text(`FALLA RESUELTA: ${sess.fallaResuelta||'—'}`, marginX, y); y+=6;
+  doc.setFont(undefined,'normal');
+  doc.setFontSize(8.5);
+  y = wrapText(doc, `Observaciones de la actividad: ${sess.observaciones||'—'}`, marginX, y, W-28);
+  y += 4;
+  y = wrapText(doc, `Nombre del personal quien ejecuta: ${sess.firma.ejecuta||'—'}`, marginX, y, W-28);
+  y = wrapText(doc, `Empresa quien ejecuta: ${sess.firma.empresa||'—'}`, marginX, y+2, W-28);
+  y = wrapText(doc, `Nombre del quien revisa: ${sess.firma.revisa||'—'}`, marginX, y+2, W-28);
+  y = wrapText(doc, `Fecha de elaboración: ${sess.firma.fechaElaboracion||'—'}`, marginX, y+2, W-28);
 
+  const groups = collectPhotoGroups(sess);
+  if(groups.length){
+    doc.addPage();
+    doc.setFontSize(12); doc.setTextColor(227,6,19); doc.setFont(undefined,'bold');
+    doc.text('EVIDENCIA FOTOGRÁFICA DE LA ACTIVIDAD', 14, 15);
+    doc.setFont(undefined,'normal');
+    const boxW=88, imgH=60, rowH=76;
+    let py=24;
+    groups.forEach(group=>{
+      if(py>250){ doc.addPage(); py=15; }
+      doc.setFillColor(70,70,70);
+      doc.roundedRect(14, py-4.5, 182, 6, 1.2, 1.2, 'F');
+      doc.setFontSize(8.5); doc.setTextColor(255,255,255); doc.setFont(undefined,'bold');
+      doc.text(group.title.toUpperCase(), 14+91, py-0.3, {align:'center'});
+      doc.setFont(undefined,'normal');
+      py += 5;
       let x=14, col=0;
       group.items.forEach(it=>{
         if(col===0 && py+rowH>292){ doc.addPage(); py=15; }
+        doc.setDrawColor(190,188,182);
+        doc.rect(x,py,boxW,imgH+8);
         if(it.dataUrl){
           try{ doc.addImage(it.dataUrl,'JPEG',x,py,boxW,imgH); }catch(e){}
         } else {
-          doc.setDrawColor(210,208,200);
           doc.setFillColor(249,248,245);
-          doc.rect(x,py,boxW,imgH,'FD');
-          doc.setFontSize(7); doc.setTextColor(170,170,165);
+          doc.rect(x,py,boxW,imgH,'F');
+          doc.setFontSize(7.5); doc.setTextColor(170,170,165);
           doc.text('Sin foto', x+boxW/2, py+imgH/2, {align:'center'});
         }
-        doc.setFontSize(6.3); doc.setTextColor(60,60,60);
-        const lines = doc.splitTextToSize(it.caption, boxW).slice(0,3);
-        doc.text(lines, x, py+imgH+3);
+        doc.setFillColor(225,223,217);
+        doc.rect(x,py+imgH,boxW,8,'F');
+        doc.setFontSize(7); doc.setTextColor(40,40,40);
+        const lines = doc.splitTextToSize(it.caption, boxW-4).slice(0,2);
+        doc.text(lines, x+boxW/2, py+imgH+3.5, {align:'center'});
         col++;
-        if(col>=3){ col=0; x=14; py+=rowH; } else { x+=boxW+6; }
+        if(col>=2){ col=0; x=14; py+=rowH; } else { x+=boxW+6; }
       });
       if(col!==0){ py+=rowH; col=0; }
       py += 5;
@@ -1324,7 +1019,7 @@ function generatePDF(sess){
   }
 
   addHeaderFooter(doc);
-  doc.save(`Mantenimiento_${sess.id}.pdf`);
+  doc.save(`Emergencia_${sess.id}.pdf`);
 }
 function wrapText(doc, text, x, y, maxWidth){
   const lines = doc.splitTextToSize(text, maxWidth);
@@ -1347,22 +1042,21 @@ function debouncedSave(){
   if(saveDebounce) clearTimeout(saveDebounce);
   saveDebounce = setTimeout(()=>{ saveSessionSafe(state.currentSession); }, 500);
 }
-
 async function handleDownload(id, type){
   const sess = await loadSession(id);
-  if(!sess){ alert('No se encontró ese formato.'); return; }
+  if(!sess){ alert('No se encontró ese reporte.'); return; }
   generatePDF(sess);
 }
 async function handleDelete(id){
   if(!isMasterAdmin()){ alert('Solo el administrador maestro puede borrar formatos.'); render(); return; }
-  if(!confirm(`¿Eliminar permanentemente el formato ${id}? Esta acción no se puede deshacer.`)) return;
+  if(!confirm(`¿Eliminar permanentemente el reporte ${id}? Esta acción no se puede deshacer.`)) return;
   await deleteSessionEverywhere(id);
   render();
 }
 
 function attachHandlers(){
   document.querySelectorAll('[data-nav]').forEach(b=>{
-    b.onclick = ()=>{ stopLocationLoop(); stopLiveRefresh(); state.view = b.dataset.nav; render(); };
+    b.onclick = ()=>{ stopLocationLoop(); stopLiveRefresh(); if(b.dataset.tipo) state.pendingTipo = b.dataset.tipo; state.view = b.dataset.nav; render(); };
   });
 
   const btnCrearOt = document.getElementById('btn-crear-ot');
@@ -1370,24 +1064,11 @@ function attachHandlers(){
     if(isAdminOnlyMode()){ alert('Como administrador no tienes permiso para crear nuevos formatos.'); return; }
     const otVal = document.getElementById('ot-input').value.trim();
     state.currentSession = emptySession(otVal);
-    state.view = "sitio-check";
+    if(state.pendingTipo){ state.currentSession.actividad.tipoActividad = state.pendingTipo; state.pendingTipo = null; }
+    state.view = "form";
     render();
     await saveSessionSafe(state.currentSession);
     startLocationLoop(state.currentSession);
-  };
-
-  const sitioNombreInput = document.getElementById('sitio-nombre-input');
-  if(sitioNombreInput){
-    sitioNombreInput.oninput = ()=>{ state.currentSession.general.nombreEstacion = sitioNombreInput.value; debouncedSave(); };
-    sitioNombreInput.onblur = async ()=>{ await saveSessionSafe(state.currentSession); render(); };
-  }
-  const btnContinuarSitio = document.getElementById('btn-continuar-sitio');
-  if(btnContinuarSitio) btnContinuarSitio.onclick = ()=>{
-    const val = getUbicacionValidacion(state.currentSession);
-    if(val.estado==='bloqueado'){ alert('Todavía estás fuera del rango permitido de ese sitio.'); return; }
-    if(!(state.currentSession.general.nombreEstacion||'').trim()){ alert('Escribe el nombre del sitio para continuar.'); return; }
-    state.view = "form";
-    render();
   };
 
   document.querySelectorAll('[data-open]').forEach(r=>{
@@ -1402,7 +1083,6 @@ function attachHandlers(){
       }
     };
   });
-
   document.querySelectorAll('[data-watch]').forEach(r=>{
     r.onclick = async ()=>{
       state.viewerId = r.dataset.watch;
@@ -1414,49 +1094,19 @@ function attachHandlers(){
   document.querySelectorAll('[data-pdf]').forEach(b=> b.onclick = (e)=>{ e.stopPropagation(); handleDownload(b.dataset.pdf,'pdf'); });
   document.querySelectorAll('[data-delete]').forEach(b=> b.onclick = (e)=>{ e.stopPropagation(); handleDelete(b.dataset.delete); });
 
-  document.querySelectorAll('input[data-field], textarea[data-field]').forEach(inp=>{
-    inp.oninput = ()=>{ setPath(state.currentSession, inp.dataset.field, inp.value); debouncedSave(); };
-  });
-  const nombreEstacionInput = document.querySelector('input[data-field="general.nombreEstacion"]');
-  if(nombreEstacionInput) nombreEstacionInput.onblur = async ()=>{ await saveSessionSafe(state.currentSession); render(); };
-  document.querySelectorAll('select[data-field]').forEach(sel=>{
-    sel.onchange = async ()=>{
-      setPath(state.currentSession, sel.dataset.field, sel.value);
-      await saveSessionSafe(state.currentSession);
-      render();
-    };
-  });
-
-  document.querySelectorAll('[data-hrowfield]').forEach(inp=>{
+  document.querySelectorAll('input[data-field], textarea[data-field], select[data-field]').forEach(inp=>{
     const isSelect = inp.tagName==='SELECT';
     const evt = isSelect ? 'onchange' : 'oninput';
     inp[evt] = async ()=>{
-      const [rowId, field] = inp.dataset.hrowfield.split('|');
-      const row = (state.currentSession.hallazgosDetalle||[]).find(r=>r.id===rowId);
-      if(row){
-        row[field] = inp.value;
-        if(isSelect){ await saveSessionSafe(state.currentSession); render(); }
-        else debouncedSave();
+      let val = inp.value;
+      if(inp.dataset.iso && val){ val = new Date(val).toISOString(); }
+      setPath(state.currentSession, inp.dataset.field, val);
+      if(isSelect){
+        await saveSessionSafe(state.currentSession);
+        render();
+      } else {
+        debouncedSave();
       }
-    };
-  });
-  document.querySelectorAll('[data-addhallazgorow]').forEach(b=>{
-    b.onclick = async ()=>{
-      const arrName = b.dataset.addhallazgorow;
-      const s = state.currentSession;
-      if(!s[arrName]) s[arrName] = [];
-      if(arrName==='hallazgosFotos') s[arrName].push({id:rid(), foto:null});
-      else s[arrName].push({id:rid(), sistema:"", prioridad:"Media", descripcion:"", resuelto:"", foto:null});
-      await saveSessionSafe(s);
-      render();
-    };
-  });
-  document.querySelectorAll('[data-delhallazgorow]').forEach(b=>{
-    b.onclick = async ()=>{
-      const [arrName, rowId] = b.dataset.delhallazgorow.split('|');
-      state.currentSession[arrName] = (state.currentSession[arrName]||[]).filter(r=>r.id!==rowId);
-      await saveSessionSafe(state.currentSession);
-      render();
     };
   });
 
@@ -1465,7 +1115,7 @@ function attachHandlers(){
     const evt = isSelect ? 'onchange' : 'oninput';
     inp[evt] = async ()=>{
       const [arrName, rowId, field] = inp.dataset.rowfield.split('|');
-      const row = (state.currentSession[arrName]||[]).find(r=>r.id===rowId);
+      const row = findRow(arrName, rowId);
       if(row){
         row[field] = inp.value;
         if(isSelect){ await saveSessionSafe(state.currentSession); render(); }
@@ -1473,20 +1123,20 @@ function attachHandlers(){
       }
     };
   });
+
   document.querySelectorAll('[data-addrow]').forEach(b=>{
-    b.onclick = async ()=>{
+    b.onclick = ()=>{
       const arrName = b.dataset.addrow;
-      state.currentSession[arrName] = state.currentSession[arrName] || [];
       state.currentSession[arrName].push(ROW_TEMPLATES[arrName]());
-      await saveSessionSafe(state.currentSession);
+      saveSessionSafe(state.currentSession);
       render();
     };
   });
   document.querySelectorAll('[data-delrow]').forEach(b=>{
-    b.onclick = async ()=>{
+    b.onclick = ()=>{
       const [arrName, rowId] = b.dataset.delrow.split('|');
-      state.currentSession[arrName] = (state.currentSession[arrName]||[]).filter(r=>r.id!==rowId);
-      await saveSessionSafe(state.currentSession);
+      state.currentSession[arrName] = state.currentSession[arrName].filter(r=>r.id!==rowId);
+      saveSessionSafe(state.currentSession);
       render();
     };
   });
@@ -1532,87 +1182,12 @@ function attachHandlers(){
     loadVideoData(sess.id, vidId).then(data=>{ if(data) el.src = data; });
   });
 
-  const btnUploadSitios = document.getElementById('btn-upload-sitios');
-  if(btnUploadSitios) btnUploadSitios.onclick = ()=>{ const inp = document.getElementById('sitios-file-input'); if(inp) inp.click(); };
-  const sitiosFileInput = document.getElementById('sitios-file-input');
-  if(sitiosFileInput) sitiosFileInput.onchange = async (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    try{
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, {type:'array'});
-      const firstSheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(firstSheet, {defval:''});
-      if(!rows.length){ alert('El archivo no tiene filas de datos.'); e.target.value=''; return; }
-      const headers = Object.keys(rows[0]);
-      const findCol = (needle)=> headers.find(h=> String(h).toLowerCase().includes(needle));
-      const colNombre = headers[0]; // la columna A siempre es el nombre del sitio
-      const colLat = findCol('lat');
-      const colLng = findCol('lon') || findCol('lng');
-      if(!colNombre || !colLat || !colLng){
-        alert('No se encontró la columna A (nombre) o las columnas de latitud/longitud. Revisa el archivo.');
-        e.target.value=''; return;
-      }
-      const parsed = rows.map(r=>({
-        nombre: String(r[colNombre]||'').trim(),
-        lat: parseFloat(r[colLat]),
-        lng: parseFloat(r[colLng]),
-      })).filter(s=> s.nombre && !isNaN(s.lat) && !isNaN(s.lng));
-      if(!parsed.length){ alert('No se pudo leer ningún sitio válido del archivo.'); e.target.value=''; return; }
-      await saveSitiosDB(parsed);
-      alert(`Se cargaron ${parsed.length} sitios correctamente.`);
-      render();
-    }catch(err){
-      console.error(err);
-      alert('No se pudo leer el archivo. Verifica que sea un Excel (.xlsx) o CSV válido.');
-    }
-    e.target.value='';
-  };
-  const btnClearSitios = document.getElementById('btn-clear-sitios');
-  if(btnClearSitios) btnClearSitios.onclick = async ()=>{
-    if(!confirm('¿Borrar toda la base de datos de sitios? Ya no se podrá validar la ubicación de los técnicos hasta subir una nueva.')) return;
-    await saveSitiosDB([]);
-    render();
-  };
-
-  document.querySelectorAll('select.estado-select[data-sec]').forEach(sel=>{
-    sel.onchange = ()=>{
-      const sec = sel.dataset.sec, idx = sel.dataset.idx;
-      const arr = arrForSec(sec);
-      arr[idx].estado = sel.value; sel.dataset.val = sel.value;
-      const extra = document.querySelector(`[data-extra="${sec}:${idx}"]`);
-      if(extra) extra.classList.toggle('show', sel.value!=='BUENO');
-      debouncedSave();
-    };
-  });
-
-  document.querySelectorAll('input[data-filtobs]').forEach(inp=>{
-    inp.oninput = ()=>{ state.currentSession.filtracion[inp.dataset.filtobs].observacion = inp.value; debouncedSave(); };
-  });
-
-  document.querySelectorAll('textarea[data-field="causa"], textarea[data-field="deteccion"], textarea[data-field="correccion"]').forEach(ta=>{
-    ta.oninput = ()=>{
-      const wrap = ta.closest('[data-extra]');
-      const [sec, idx] = wrap.dataset.extra.split(':');
-      arrForSec(sec)[idx][ta.dataset.field] = ta.value;
-      debouncedSave();
-    };
-  });
-
-  document.querySelectorAll('[data-toggle]').forEach(t=>{
-    t.onclick = ()=>{
-      const body = document.getElementById(t.dataset.toggle);
-      body.classList.toggle('show');
-      t.querySelector('.chevron').classList.toggle('open');
-    };
-  });
-
   const btnFin = document.getElementById('btn-finalizar');
   if(btnFin) btnFin.onclick = async ()=>{
-    if(!confirm('¿Finalizar este mantenimiento? Ya no se pedirá más ubicación automática.')) return;
+    if(!confirm('¿Finalizar esta atención? Ya no se pedirá más ubicación automática.')) return;
     state.currentSession.status = 'finalizado';
     state.currentSession.general.fechaFin = nowIso();
-    state.currentSession.firma.fechaElaboracion = nowIso();
+    if(!state.currentSession.firma.fechaElaboracion) state.currentSession.firma.fechaElaboracion = new Date().toLocaleDateString('es-CO');
     await saveSessionSafe(state.currentSession);
     stopLocationLoop();
     state.view = 'finalizado';
@@ -1621,7 +1196,6 @@ function attachHandlers(){
 
   const btnGpsAuto = document.getElementById('btn-gps-auto');
   if(btnGpsAuto) btnGpsAuto.onclick = ()=> captureLocation(state.currentSession, 'manual');
-
   const btnGpsManual = document.getElementById('btn-gps-manual');
   if(btnGpsManual) btnGpsManual.onclick = async ()=>{
     const lat = parseFloat(document.getElementById('manual-lat').value);
@@ -1636,77 +1210,44 @@ function attachHandlers(){
   if(btnDlPdf) btnDlPdf.onclick = ()=> generatePDF(state.currentSession);
   const btnDeleteCurrent = document.getElementById('btn-delete-current');
   if(btnDeleteCurrent) btnDeleteCurrent.onclick = async ()=>{ await handleDelete(state.currentSession.id); state.view = 'historial'; render(); };
-
   const btnOtroFormato = document.getElementById('btn-otro-formato');
   if(btnOtroFormato) btnOtroFormato.onclick = ()=>{ state.view = 'nuevo'; render(); };
   const btnVerHistorial = document.getElementById('btn-ver-historial');
   if(btnVerHistorial) btnVerHistorial.onclick = ()=>{ state.view = 'historial'; render(); };
-
   const btnVolver = document.getElementById('btn-volver');
   if(btnVolver) btnVolver.onclick = ()=>{ stopLiveRefresh(); stopLocationLoop(); state.view = 'home'; render(); };
 }
 
-// ---------- delegated photo handlers (bound once) ----------
+// ---------- delegated photo handlers ----------
 function setupPhotoDelegation(){
   const app = document.getElementById('app');
-
   app.addEventListener('click', (e)=>{
     const camBtn = e.target.closest('[data-cam]');
-    if(camBtn){
-      const input = camBtn.parentElement.querySelector('.photo-input');
-      input.setAttribute('capture','environment');
-      input.click();
-      return;
-    }
+    if(camBtn){ const input = camBtn.parentElement.querySelector('.photo-input'); input.setAttribute('capture','environment'); input.click(); return; }
     const galBtn = e.target.closest('[data-gal]');
-    if(galBtn){
-      const input = galBtn.parentElement.querySelector('.photo-input');
-      input.removeAttribute('capture');
-      input.click();
-      return;
-    }
+    if(galBtn){ const input = galBtn.parentElement.querySelector('.photo-input'); input.removeAttribute('capture'); input.click(); return; }
     const delBtn = e.target.closest('[data-delphoto]');
     if(delBtn){
       const key = delBtn.dataset.delphoto;
       if(!confirm('¿Eliminar esta foto?')) return;
-      if(key.indexOf('|')>=0){
-        const [arrName, rowId] = key.split('|');
-        const s = activeSession();
-        const row = s && (s[arrName]||[]).find(r=>r.id===rowId);
-        if(!row) return;
-        row.foto = null;
-        saveSessionSafe(state.currentSession);
-        const cell = document.querySelector(`[data-photo-cell="${key}"]`);
-        if(cell) cell.innerHTML = photoCellHtml(key, row, false);
-        return;
-      }
-      const [sec, idx] = key.split(':');
-      const arr = arrForSec(sec);
-      if(!arr) return;
-      arr[idx].foto = null;
+      const [arrName, rowId, field] = key.split('|');
+      const row = findRow(arrName, rowId);
+      if(!row) return;
+      row[field] = null;
       saveSessionSafe(state.currentSession);
       const cell = document.querySelector(`[data-photo-cell="${key}"]`);
-      if(cell) cell.innerHTML = photoCellHtml(key, arr[idx], false);
+      if(cell) cell.innerHTML = photoCellHtml(key, null, false, cell.querySelector('.foto-col-title')?cell.querySelector('.foto-col-title').textContent:'Evidencia');
       return;
     }
     const enlarge = e.target.closest('[data-enlarge]');
     if(enlarge){
       const key = enlarge.dataset.enlarge;
-      if(key.indexOf('|')>=0){
-        const [arrName, rowId] = key.split('|');
-        const s = activeSession();
-        const row = s && (s[arrName]||[]).find(r=>r.id===rowId);
-        if(row && row.foto) openPhotoModal(row.foto, arrName==='hallazgosFotos'?'Foto general de hallazgo':'Foto de hallazgo');
-        return;
-      }
-      const [sec, idxStr] = key.split(':'); const idx = parseInt(idxStr,10);
-      const arr = arrForSec(sec);
-      const entry = arr ? arr[idx] : null;
-      if(entry && entry.foto) openPhotoModal(entry.foto, labelForKey(key));
+      const [arrName, rowId, field] = key.split('|');
+      const row = findRow(arrName, rowId);
+      if(row && row[field]) openPhotoModal(row[field], field);
       return;
     }
   });
-
   app.addEventListener('change', async (e)=>{
     const input = e.target.closest('.photo-input');
     if(input && input.files && input.files[0]){
@@ -1714,39 +1255,26 @@ function setupPhotoDelegation(){
       const file = input.files[0];
       try{
         const dataUrl = await compressImage(file);
-        if(key.indexOf('|')>=0){
-          const [arrName, rowId] = key.split('|');
-          const s = activeSession();
-          const row = s && (s[arrName]||[]).find(r=>r.id===rowId);
-          if(row){
-            row.foto = dataUrl;
-            const ok = await saveSessionSafe(state.currentSession);
-            const cell = document.querySelector(`[data-photo-cell="${key}"]`);
-            if(cell) cell.innerHTML = photoCellHtml(key, row, false);
-            if(!ok) alert('La foto se agregó pero no se pudo guardar (el formato podría ser muy pesado). Considera eliminar alguna foto anterior.');
-          }
-        } else {
-          const [sec, idx] = key.split(':');
-          const arr = arrForSec(sec);
-          arr[idx].foto = dataUrl;
+        const [arrName, rowId, field] = key.split('|');
+        const row = findRow(arrName, rowId);
+        if(row){
+          row[field] = dataUrl;
           const ok = await saveSessionSafe(state.currentSession);
           const cell = document.querySelector(`[data-photo-cell="${key}"]`);
-          if(cell) cell.innerHTML = photoCellHtml(key, arr[idx], false);
-          if(!ok) alert('La foto se agregó pero no se pudo guardar (el formato podría ser muy pesado). Considera eliminar alguna foto anterior.');
+          const lbl = cell && cell.querySelector('.foto-col-title') ? cell.querySelector('.foto-col-title').textContent : 'Evidencia';
+          if(cell) cell.innerHTML = photoCellHtml(key, dataUrl, false, lbl);
+          if(!ok) alert('La foto se agregó pero no se pudo guardar. Considera eliminar alguna foto anterior.');
         }
-      }catch(err){
-        alert('No se pudo procesar la foto: ' + err.message);
-      }
+      }catch(err){ alert('No se pudo procesar la foto: ' + err.message); }
       input.value = '';
     }
   });
-
   document.getElementById('photo-modal-close').onclick = closePhotoModal;
   document.getElementById('photo-modal').onclick = (e)=>{ if(e.target.id==='photo-modal') closePhotoModal(); };
 }
 function openPhotoModal(src, caption){
   document.getElementById('photo-modal-img').src = src;
-  document.getElementById('photo-modal-caption').textContent = caption;
+  document.getElementById('photo-modal-caption').textContent = caption||'';
   document.getElementById('photo-modal').classList.add('show');
 }
 function closePhotoModal(){ document.getElementById('photo-modal').classList.remove('show'); }
@@ -1763,16 +1291,13 @@ function startLiveRefresh(){
 function stopLiveRefresh(){ if(state.liveTimer){ clearInterval(state.liveTimer); state.liveTimer=null; } }
 
 setupPhotoDelegation();
-loadSitiosDB().then(()=>{ if(state.view==='form') render(); });
 render();
 })();
 </script>
 
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  });
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
 }
 </script>
 </body>

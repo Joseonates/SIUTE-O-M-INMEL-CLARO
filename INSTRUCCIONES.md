@@ -1,64 +1,74 @@
-# Cómo activar la sincronización entre el técnico y el supervisor
+# Cómo activar esta suite con control de acceso real
 
-Esta variante necesita un backend gratuito (Firebase) para que los datos que
-guarda el técnico en su celular se vean en tiempo real en el dispositivo del
-supervisor. Son 4 pasos, ~10 minutos, sin tarjeta de crédito.
+Esta carpeta trae 3 aplicaciones que deben compartir el MISMO proyecto de
+Firebase para funcionar como un conjunto:
+
+- `index.html` (la entrada / selector con autorización de usuarios)
+- `plantas/index.html` (Mantenimiento Preventivo — Plantas Eléctricas)
+- `emergencias/index.html` (Mantenimiento Correctivo y Emergencias)
+
+Si ya configuraste Firebase para alguna app anterior (Plantas, Emergencias
+o el Catálogo de Belleza), **puedes reutilizar ese mismo proyecto** — el
+único paso es pegar el mismo `firebaseConfig` en los 3 archivos de esta
+carpeta. Si es la primera vez, sigue estos pasos:
 
 ## 1. Crear el proyecto de Firebase
 1. Ve a **https://console.firebase.google.com**
-2. Clic en **"Agregar proyecto"**, ponle un nombre (ej: `plantas-claro-costa`)
+2. Clic en **"Agregar proyecto"**, ponle un nombre (ej: `claro-om-suite`)
 3. Puedes desactivar Google Analytics (no se necesita)
 4. Clic en "Crear proyecto"
 
 ## 2. Activar Firestore (la base de datos)
 1. En el menú izquierdo: **Compilación → Firestore Database**
 2. Clic en **"Crear base de datos"**
-3. Elige una ubicación cercana (ej. `southamerica-east1` — São Paulo, o
-   `us-central1` si no aparece una más cercana)
-4. Elige **"Iniciar en modo de prueba"** (esto da acceso abierto por 30 días;
-   ver la sección de seguridad más abajo para dejarlo permanente y protegido)
+3. Elige una ubicación cercana (ej. `southamerica-east1` — São Paulo)
+4. Elige **"Iniciar en modo de prueba"**
 
 ## 3. Obtener las credenciales del proyecto (firebaseConfig)
-1. Clic en el ícono de engranaje ⚙️ (arriba a la izquierda) → **"Configuración
-   del proyecto"**
+1. Clic en el ícono de engranaje ⚙️ → **"Configuración del proyecto"**
 2. Baja hasta **"Tus apps"** → clic en el ícono **`</>`** (Web)
-3. Ponle un apodo (ej: `app-tecnico`) y clic en **"Registrar app"**
-4. Copia el objeto `firebaseConfig` que te muestra, algo así:
+3. Ponle un apodo y clic en **"Registrar app"**
+4. Copia el objeto `firebaseConfig` que te muestra
 
-```js
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "plantas-claro-costa.firebaseapp.com",
-  projectId: "plantas-claro-costa",
-  storageBucket: "plantas-claro-costa.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef123456"
-};
-```
+## 4. Pegarlo en LOS TRES archivos
+Abre cada uno de estos archivos y reemplaza el bloque `const firebaseConfig = {...}`
+por el que copiaste — debe quedar **idéntico en los tres**:
 
-## 4. Pegarlo en la app
-Abre `index.html` de esta carpeta, busca el bloque que dice:
+- `index.html`
+- `plantas/index.html`
+- `emergencias/index.html`
 
-```js
-const firebaseConfig = {
-    apiKey: "PEGA_AQUI_TU_API_KEY",
-    ...
-};
-```
-
-Y reemplázalo completo por el que copiaste de Firebase. Guarda el archivo.
-
-Listo — ya puedes subir esta carpeta a un hosting (ver más abajo) y usarla
-desde el celular del técnico y el del supervisor: ambos verán los mismos
-datos en tiempo real.
+Si el `firebaseConfig` no es el mismo en los tres, cada app quedará
+guardando datos en un lugar distinto y nada se va a ver conectado.
 
 ---
 
-## Seguridad de la base de datos (importante)
-El "modo de prueba" de Firestore deja la base de datos **abierta a
-cualquiera con el enlace** y expira a los 30 días. Para un uso interno de
-equipo, en **Firestore Database → Reglas**, puedes usar unas reglas simples
-como estas (siguen siendo abiertas, pero sin fecha de vencimiento):
+## Cómo funciona el control de acceso
+1. Un técnico abre la app, escribe su **nombre completo** y **número de
+   cédula**, y queda en estado "pendiente".
+2. El administrador entra tocando **"Soy administrador"** en la pantalla
+   de inicio (contraseña por defecto: `admin2026` — **cámbiala** editando
+   la constante `ADMIN_PASSWORD` al inicio del script en `index.html`
+   antes de usar la app en producción).
+3. Desde el panel de administrador puede **autorizar**, **rechazar** o
+   **revocar** el acceso de cualquier persona, o crear directamente un
+   usuario ya autorizado sin que tenga que solicitarlo primero.
+4. Una vez autorizado, el técnico ve el selector de plantillas (Plantas
+   Eléctricas / Emergencias) y puede entrar a cualquiera de las dos.
+
+### Aviso de seguridad importante
+La contraseña de administrador es un candado simple para evitar que
+cualquier técnico entre por accidente al panel — **no es autenticación
+segura real**. Cualquier persona que revise el código fuente de la app
+(algo que cualquiera puede hacer en una app web) puede ver o cambiar esa
+contraseña. Esto es razonable para un control de acceso interno de equipo,
+pero no lo uses para proteger información verdaderamente sensible. Si
+necesitas autenticación robusta (por ejemplo con Firebase Authentication
+y contraseñas individuales por usuario), lo podemos construir aparte.
+
+## Seguridad de la base de datos
+El "modo de prueba" expira a los 30 días. Para dejarlo abierto de forma
+permanente, en **Firestore Database → Reglas**:
 
 ```
 rules_version = '2';
@@ -71,26 +81,9 @@ service cloud.firestore {
 }
 ```
 
-Esto es aceptable si el enlace de la app solo circula internamente en tu
-equipo. Si más adelante quieres restringirlo por usuario (ej. solo técnicos
-autenticados), se puede agregar Firebase Authentication — avísame y lo
-armamos.
-
-## Sobre el consumo (plan gratuito "Spark")
-Firebase da gratis 50,000 lecturas y 20,000 escrituras por día — de sobra
-para uso normal de un equipo de técnicos. El único caso que consume más es
-dejar el "Modo supervisor" abierto viendo una OT en vivo durante muchas
-horas seguidas (se actualiza cada 6 segundos), ya que cada actualización
-lee la OT completa. Si tu equipo lo usará de forma intensiva y constante,
-aumenta el intervalo en `index.html` (busca `}, 6000);` dentro de
-`startLiveRefresh` y súbelo, por ejemplo a `15000` — 15 segundos).
-
-## Publicar la app (para que tenga una URL y se pueda instalar)
-Sube esta carpeta completa (`index.html`, `manifest.json`, `sw.js`, los
-íconos) a un hosting gratuito:
-- **Firebase Hosting** (recomendado, ya tienes la cuenta): en la consola de
-  Firebase → Hosting → seguir el asistente
-- O **Netlify Drop** (netlify.com/drop): arrastra la carpeta y listo
-
-Luego, para empaquetarla como APK instalable, usa **pwabuilder.com** con la
-URL donde quedó publicada (Package for stores → Android).
+## Publicar la app
+Sube la carpeta completa (con las tres subcarpetas) a un hosting gratuito
+(Firebase Hosting, o Netlify Drop en netlify.com/drop). Comparte esa URL
+con tu equipo — todos entrarán por el mismo selector con el control de
+acceso activo. Para generar un APK instalable, usa **pwabuilder.com** con
+esa URL (Package for stores → Android).
