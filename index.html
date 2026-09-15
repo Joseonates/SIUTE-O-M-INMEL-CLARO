@@ -572,12 +572,12 @@ function showModule(id){
   if(id==='plantas'){
     if(window.EmergenciasApp) window.EmergenciasApp.stop();
     if(emergenciasRoot){ emergenciasRoot.style.display='none'; emergenciasRoot.innerHTML=''; }
-    if(plantasRoot) plantasRoot.style.display='';
+    if(plantasRoot) plantasRoot.style.display='block';
     window.PlantasApp.start();
   } else {
     if(window.PlantasApp) window.PlantasApp.stop();
     if(plantasRoot){ plantasRoot.style.display='none'; plantasRoot.innerHTML=''; }
-    if(emergenciasRoot) emergenciasRoot.style.display='';
+    if(emergenciasRoot) emergenciasRoot.style.display='block';
     const tipoMap = {emergencias:'Emergencia', correctivos:'Correctivo'};
     window.EmergenciasApp.start(tipoMap[id] || null);
   }

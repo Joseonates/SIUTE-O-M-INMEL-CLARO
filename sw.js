@@ -1,4 +1,4 @@
-const CACHE_NAME = "suite-om-merged-v1";
+const CACHE_NAME = "suite-om-merged-v2";
 const APP_SHELL = [
   "./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png",
   "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
