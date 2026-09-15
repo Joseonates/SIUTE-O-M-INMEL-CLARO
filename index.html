@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<title>Claro / INMEL — Suite O&amp;M (Sincronizado)</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1c2e4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Suite O&amp;M">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<style>
+  :root{
+    --ink:#1c2e4a; --ink-dark:#101c2e; --red:#E30613; --red-dark:#a30410; --paper:#f4f5f7;
+    --panel:#ffffff; --line:#e1e4ea; --muted:#6b7280; --good:#1e8a4c; --bad:#c8102e; --amber:#b8860b;
+    --sans:-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--sans);background:var(--paper);color:var(--ink);}
+  #app{max-width:640px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+  .center-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px 18px;}
+  .box{width:100%;max-width:420px;}
+  .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:22px;}
+  .logo-mark{width:46px;height:46px;border-radius:10px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
+  .logo-text{text-align:left;}
+  .logo-text .t1{font-size:15px;font-weight:800;}
+  .logo-text .t2{font-size:11.5px;color:var(--muted);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:0 2px 14px rgba(20,30,50,.06);}
+  .card h2{font-size:16px;margin:0 0 6px;}
+  .card p.sub{font-size:12.5px;color:var(--muted);margin:0 0 18px;line-height:1.5;}
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+  input,select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:7px;font-size:14px;background:#fff;color:var(--ink);}
+  .field{margin-bottom:12px;}
+  .btn{border:none;background:var(--red);color:#fff;padding:11px 16px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;width:100%;}
+  .btn:hover{background:var(--red-dark);}
+  .btn.secondary{background:var(--ink);color:#fff;}
+  .btn.secondary:hover{background:var(--ink-dark);}
+  .btn.ghost{background:transparent;color:var(--muted);border:1px solid var(--line);font-weight:600;}
+  .btn.small{padding:7px 12px;font-size:12.5px;width:auto;}
+  .btn.danger{background:#fff;color:var(--bad);border:1px solid var(--bad);}
+  .link-btn{background:none;border:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;padding:0;margin-top:16px;display:block;text-align:center;width:100%;}
+  .status-box{text-align:center;padding:10px 0;}
+  .status-box .big{font-size:38px;margin-bottom:10px;}
+  .row-actions{display:flex;gap:8px;margin-top:14px;}
+  .row-actions .btn{width:auto;flex:1;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--ink);padding:14px 16px;background:var(--panel);}
+  .topbar .who{font-size:12px;color:var(--muted);}
+  .topbar .who b{color:var(--ink);}
+  .topbar .actions{display:flex;gap:8px;}
+
+  .selector-wrap{padding:20px 16px;flex:1;}
+  .tpl-grid{display:grid;grid-template-columns:1fr;gap:14px;max-width:520px;margin:0 auto;}
+  @media(min-width:520px){ .tpl-grid{grid-template-columns:1fr 1fr;} }
+  .tpl-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 20px;cursor:pointer;transition:.15s;text-align:center;}
+  .tpl-card:hover{border-color:var(--red);transform:translateY(-3px);box-shadow:0 6px 18px rgba(20,30,50,.08);}
+  .tpl-card .icon{font-size:34px;margin-bottom:10px;}
+  .tpl-card h3{margin:0 0 6px;font-size:16px;}
+  .tpl-card p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.4;}
+
+  .iframe-wrap{flex:1;display:flex;flex-direction:column;}
+  .iframe-wrap iframe{flex:1;border:none;width:100%;min-height:70vh;}
+  .iframe-note{font-size:11px;color:var(--muted);background:#fff8e8;border-bottom:1px solid #f0d98c;padding:8px 16px;line-height:1.4;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{background:#f7f8fa;text-align:left;padding:7px 8px;border-bottom:2px solid var(--line);font-size:10.5px;text-transform:uppercase;color:var(--muted);}
+  td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  .status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;}
+  .status-pill.pendiente{background:#fff4e0;color:var(--amber);}
+  .status-pill.autorizado{background:#e5f6ea;color:var(--good);}
+  .status-pill.rechazado{background:#fbe7e6;color:var(--bad);}
+  .admin-wrap{padding:18px 16px;max-width:760px;margin:0 auto;width:100%;}
+  .subhead{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px;}
+  .empty{text-align:center;color:var(--muted);padding:20px;font-size:13px;}
+  .warn-box{background:#fff8e8;border:1px solid #f0d98c;color:#7a5c00;border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div id="app"><div class="center-wrap">Cargando…</div></div>
+
+<script>
+/* ============================================================
+   Almacenamiento con sincronización real (Firebase Firestore)
+   — reemplaza window.storage.
+   VARIANTE CON SINCRONIZACIÓN: la lista de usuarios autorizados
+   es compartida entre todos los dispositivos — así el
+   administrador autoriza a alguien una vez y esa persona queda
+   habilitada sin importar desde qué celular entre.
+
+   ⚠️ PASO OBLIGATORIO ANTES DE USAR: reemplaza el objeto
+   firebaseConfig de abajo con el de TU proyecto de Firebase —
+   usa el MISMO proyecto que configuraste en plantas/index.html
+   y emergencias/index.html para que todo funcione en conjunto.
+   Instrucciones completas en INSTRUCCIONES.md.
+   ============================================================ */
+(function () {
+  const firebaseConfig = {
+    apiKey: "PEGA_AQUI_TU_API_KEY",
+    authDomain: "PEGA_AQUI_TU_PROYECTO.firebaseapp.com",
+    projectId: "PEGA_AQUI_TU_PROYECTO",
+    storageBucket: "PEGA_AQUI_TU_PROYECTO.appspot.com",
+    messagingSenderId: "000000000000",
+    appId: "1:000000000000:web:xxxxxxxxxxxxxxxxxxxxxxxx"
+  };
+
+  if (firebaseConfig.apiKey === "PEGA_AQUI_TU_API_KEY") {
+    console.warn("⚠️ Falta configurar Firebase: edita firebaseConfig en index.html (ver INSTRUCCIONES.md).");
+  }
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const CHUNK_SIZE = 700000;
+
+  function sanitize(key) { return String(key).replace(/[\/.]/g, "_"); }
+
+  const DB_NAME = "suite-om-local-db";
+  const STORE = "kv";
+  function openLocalDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function localGet(key) {
+    const ldb = await openLocalDB();
+    return new Promise((resolve, reject) => {
+      const tx = ldb.transaction(STORE, "readonly");
+      const req = tx.objectStore(STORE).get(key);
+      req.onsuccess = () => resolve(req.result !== undefined ? { key, value: req.result } : null);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function localSet(key, value) {
+    const ldb = await openLocalDB();
+    return new Promise((resolve, reject) => {
+      const tx = ldb.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).put(value, key);
+      tx.oncomplete = () => resolve({ key, value });
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+  async function localDelete(key) {
+    const ldb = await openLocalDB();
+    return new Promise((resolve, reject) => {
+      const tx = ldb.transaction(STORE, "readwrite");
+      tx.objectStore(STORE).delete(key);
+      tx.oncomplete = () => resolve({ key, deleted: true });
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  window.storage = {
+    async get(key, shared) {
+      if (!shared) return localGet(key);
+      const id = sanitize(key);
+      const manifestSnap = await db.collection("storage_meta").doc(id).get();
+      if (!manifestSnap.exists) return null;
+      const chunkSnaps = await db.collection("storage_meta").doc(id).collection("chunks")
+        .orderBy(firebase.firestore.FieldPath.documentId()).get();
+      let value = "";
+      chunkSnaps.forEach((doc) => { value += doc.data().data; });
+      return { key, value };
+    },
+    async set(key, value, shared) {
+      if (!shared) return localSet(key, value);
+      const id = sanitize(key);
+      const chunks = [];
+      for (let i = 0; i < value.length; i += CHUNK_SIZE) chunks.push(value.slice(i, i + CHUNK_SIZE));
+      const colRef = db.collection("storage_meta").doc(id).collection("chunks");
+      const existing = await colRef.get();
+      const writes = [];
+      chunks.forEach((c, i) => { writes.push(colRef.doc(String(i).padStart(5, "0")).set({ data: c })); });
+      existing.forEach((doc) => {
+        const idx = parseInt(doc.id, 10);
+        if (idx >= chunks.length) writes.push(doc.ref.delete());
+      });
+      writes.push(db.collection("storage_meta").doc(id).set({ chunkCount: chunks.length, updatedAt: Date.now() }));
+      await Promise.all(writes);
+      return { key, value };
+    },
+    async delete(key, shared) {
+      if (!shared) return localDelete(key);
+      const id = sanitize(key);
+      const chunkSnap = await db.collection("storage_meta").doc(id).collection("chunks").get();
+      const writes = [];
+      chunkSnap.forEach((doc) => writes.push(doc.ref.delete()));
+      writes.push(db.collection("storage_meta").doc(id).delete());
+      await Promise.all(writes);
+      return { key, deleted: true };
+    },
+    async list(prefix, shared) {
+      if (!shared) return { keys: [] };
+      const p = sanitize(prefix || "");
+      const snap = await db.collection("storage_meta")
+        .where(firebase.firestore.FieldPath.documentId(), ">=", p)
+        .where(firebase.firestore.FieldPath.documentId(), "<", p + "\uf8ff")
+        .get();
+      const keys = [];
+      snap.forEach((doc) => keys.push(doc.id));
+      return { keys };
+    },
+  };
+})();
+</script>
+
+<script>
+(function(){
+
+/* ⚠️ Cambia esta contraseña de administrador antes de usar la app.
+   Esto es un candado simple (no es autenticación segura real):
+   cualquiera que vea el código fuente puede verla. Sirve para
+   evitar que cualquier técnico entre al panel por accidente, no
+   para proteger datos sensibles frente a alguien que inspeccione
+   el código. */
+const ADMIN_PASSWORD = "admin2026";
+/* ⚠️ Administrador MAESTRO: además de gestionar usuarios, tiene permiso
+   dentro de Plantas Eléctricas y Emergencias para editar y borrar
+   formatos ya finalizados (algo que ningún otro usuario, ni siquiera
+   el administrador normal, puede hacer). Cambia esta contraseña también. */
+const MASTER_ADMIN_PASSWORD = "maestro2026";
+
+const TEMPLATES = [
+  { id:'plantas', title:'Plantas Eléctricas', desc:'Mantenimiento preventivo — checklist, pruebas y filtración.', icon:'⚡', src:'plantas/index.html' },
+  { id:'emergencias', title:'Emergencias', desc:'Atención de emergencias en campo.', icon:'🚨', src:'emergencias/index.html?tipo=Emergencia' },
+  { id:'correctivos', title:'Correctivos', desc:'Mantenimiento correctivo en campo (mismo formato que Emergencias).', icon:'🔧', src:'emergencias/index.html?tipo=Correctivo' },
+];
+
+let state = { view:'loading', miCedula: localStorage.getItem('miCedula')||'', miNombre: localStorage.getItem('miNombre')||'', miEstado:null, isAdmin:false, activeTemplate:null };
+
+function nowIso(){ return new Date().toISOString(); }
+function fmt(dt){ if(!dt) return "—"; return new Date(dt).toLocaleString('es-CO',{dateStyle:'short',timeStyle:'short'}); }
+function isMasterActive(){ try{ return localStorage.getItem('masterAdmin')==='1'; }catch(e){ return false; } }
+function isAdminActive(){ try{ return localStorage.getItem('adminActive')==='1' || isMasterActive(); }catch(e){ return false; } }
+
+// ---------- formatos en ejecución (variante sincronizada: mismo Firestore que Plantas/Emergencias) ----------
+async function getRunningFormats(){
+  const all = [];
+  for(const tipo of ['plantas','emergencias']){
+    try{
+      const listing = await window.storage.list(tipo+'-index-entry:', true);
+      const keys = (listing && listing.keys) || [];
+      const entries = await Promise.all(keys.map(async k=>{
+        try{ const r = await window.storage.get(k, true); return r?JSON.parse(r.value):null; }catch(e){ return null; }
+      }));
+      entries.filter(Boolean).forEach(e=> all.push(e));
+    }catch(e){}
+  }
+  all.sort((a,b)=> new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
+  return all;
+}
+
+// ---------- generic entity storage (mismo patrón que las otras apps) ----------
+function summarize(type, obj){
+  if(type==='usuario') return {id:obj.id, cedula:obj.cedula, nombre:obj.nombre, estado:obj.estado, rol:obj.rol||'tecnico', activo:obj.activo!==false, solicitadoAt:obj.solicitadoAt, autorizadoAt:obj.autorizadoAt};
+  return {id:obj.id};
+}
+async function saveEntity(type, obj){
+  obj.updatedAt = nowIso();
+  await window.storage.set(`${type}:${obj.id}`, JSON.stringify(obj), true);
+  await window.storage.set(`${type}-idx:${obj.id}`, JSON.stringify(summarize(type,obj)), true);
+}
+async function loadEntity(type, id){
+  try{ const r = await window.storage.get(`${type}:${id}`, true); return r ? JSON.parse(r.value) : null; }catch(e){ return null; }
+}
+async function getEntityIndex(type){
+  try{
+    const listing = await window.storage.list(`${type}-idx:`, true);
+    const keys = (listing && listing.keys) || [];
+    const entries = await Promise.all(keys.map(async k=>{ try{ const r = await window.storage.get(k, true); return r?JSON.parse(r.value):null; }catch(e){ return null; } }));
+    return entries.filter(Boolean);
+  }catch(e){ return []; }
+}
+async function deleteEntity(type, id){
+  try{ await window.storage.delete(`${type}:${id}`, true); }catch(e){}
+  try{ await window.storage.delete(`${type}-idx:${id}`, true); }catch(e){}
+}
+
+function emptyUsuario(cedula, nombre){
+  return { id:cedula, cedula, nombre, estado:'pendiente', rol:'tecnico', activo:true, solicitadoAt: nowIso(), autorizadoAt:null };
+}
+function applyRoleFlags(u){
+  if(u.rol==='administrador'){ localStorage.setItem('adminActive','1'); }
+  else { localStorage.removeItem('adminActive'); }
+  // el modo maestro NUNCA se hereda por rol ni por sesión anterior en el dispositivo —
+  // solo se activa entrando explícitamente con la contraseña maestra.
+  localStorage.removeItem('masterAdmin');
+}
+
+// ---------- bootstrap: revisar si mi cédula ya está guardada y su estado actual ----------
+async function bootstrap(){
+  if(!state.miCedula){ state.view = 'login'; seedHistory(); render(); return; }
+  const u = await loadEntity('usuario', state.miCedula);
+  if(!u){ state.view = 'login'; seedHistory(); render(); return; }
+  state.miEstado = u.estado;
+  state.miNombre = u.nombre;
+  if(u.estado === 'autorizado' && u.activo===false){ state.view = 'disabled'; }
+  else if(u.estado === 'autorizado'){ applyRoleFlags(u); state.view = 'selector'; }
+  else if(u.estado === 'pendiente'){ state.view = 'pending'; }
+  else { state.view = 'rejected'; }
+  seedHistory();
+  render();
+}
+function seedHistory(){
+  try{ history.replaceState({view: state.view, activeTemplate: state.activeTemplate, isAdmin: state.isAdmin}, '', '#'+state.view); }catch(e){}
+}
+
+// ---------- RENDER ----------
+function logoRow(){
+  return `<div class="logo-row"><div class="logo-mark">O&amp;M</div><div class="logo-text"><div class="t1">Claro / INMEL</div><div class="t2">Suite de formatos de campo</div></div></div>`;
+}
+
+// ---------- navegación con historial real (atrás/adelante del navegador) ----------
+function go(view, extra){
+  state.view = view;
+  if(extra) Object.assign(state, extra);
+  try{ history.pushState({view, activeTemplate: state.activeTemplate, isAdmin: state.isAdmin}, '', '#'+view); }catch(e){}
+  render();
+}
+window.addEventListener('popstate', (e)=>{
+  if(e.state){
+    state.view = e.state.view;
+    state.activeTemplate = e.state.activeTemplate;
+    state.isAdmin = !!e.state.isAdmin;
+  } else {
+    state.view = 'login';
+  }
+  render();
+});
+
+function render(){
+  const app = document.getElementById('app');
+  if(state.view==='loading') app.innerHTML = `<div class="center-wrap">Cargando…</div>`;
+  else if(state.view==='login') app.innerHTML = renderLogin();
+  else if(state.view==='pending') app.innerHTML = renderPending();
+  else if(state.view==='rejected') app.innerHTML = renderRejected();
+  else if(state.view==='disabled') app.innerHTML = renderDisabled();
+  else if(state.view==='selector') app.innerHTML = renderSelector();
+  else if(state.view==='app') app.innerHTML = renderAppFrame();
+  else if(state.view==='admin-login') app.innerHTML = renderAdminLogin();
+  else if(state.view==='admin-panel') app.innerHTML = `<div class="center-wrap" style="align-items:flex-start;"></div>`;
+  attachHandlers();
+  if(state.view==='admin-panel') renderAdminPanelAsync();
+}
+
+function renderLogin(){
+  return `<div class="center-wrap"><div class="box">
+    ${logoRow()}
+    <div class="card">
+      <h2>Identifícate para continuar</h2>
+      <p class="sub">Ingresa tus datos para solicitar acceso. Un administrador debe autorizarte antes de que puedas usar los formatos.</p>
+      <div class="field"><label>Nombres y apellidos</label><input id="li-nombre" placeholder="Ej: Juan Carlos Pérez"></div>
+      <div class="field"><label>Número de cédula</label><input id="li-cedula" placeholder="Ej: 1102345678" inputmode="numeric"></div>
+      <button class="btn" id="btn-solicitar">Solicitar acceso</button>
+      <button class="link-btn" id="btn-admin-link">Soy administrador</button>
+      <button class="link-btn" id="btn-master-link">Soy administrador maestro</button>
+    </div>
+  </div></div>`;
+}
+
+function renderPending(){
+  return `<div class="center-wrap"><div class="box">
+    ${logoRow()}
+    <div class="card status-box">
+      <div class="big">⏳</div>
+      <h2>Solicitud enviada</h2>
+      <p class="sub">Hola ${state.miNombre||''}, tu solicitud de acceso (C.C. ${state.miCedula}) está pendiente de aprobación. Contacta al administrador de la app para que te autorice.</p>
+      <button class="btn secondary" id="btn-refrescar">🔄 Ya me autorizaron, verificar de nuevo</button>
+      <button class="link-btn" id="btn-cambiar-usuario">No soy yo / cambiar datos</button>
+    </div>
+  </div></div>`;
+}
+
+function renderRejected(){
+  return `<div class="center-wrap"><div class="box">
+    ${logoRow()}
+    <div class="card status-box">
+      <div class="big">⛔</div>
+      <h2>Acceso no autorizado</h2>
+      <p class="sub">Tu solicitud (C.C. ${state.miCedula}) fue rechazada por el administrador. Si crees que es un error, contáctalo directamente.</p>
+      <button class="link-btn" id="btn-cambiar-usuario">Cambiar datos / intentar con otra cédula</button>
+    </div>
+  </div></div>`;
+}
+
+function renderDisabled(){
+  return `<div class="center-wrap"><div class="box">
+    ${logoRow()}
+    <div class="card status-box">
+      <div class="big">🚫</div>
+      <h2>Acceso deshabilitado</h2>
+      <p class="sub">Tu acceso (C.C. ${state.miCedula}) fue deshabilitado por el administrador maestro. Contáctalo si crees que es un error.</p>
+      <button class="link-btn" id="btn-cambiar-usuario">Cambiar datos / intentar con otra cédula</button>
+    </div>
+  </div></div>`;
+}
+
+function renderSelector(){
+  const master = isMasterActive();
+  const adminVision = isAdminActive();
+  return `
+  <div class="topbar">
+    <div class="who">Conectado como <b>${state.miNombre}</b> · C.C. ${state.miCedula}${master?' · <span style="color:var(--red);font-weight:700;">Modo administrador maestro</span>':(adminVision?' · <span style="color:var(--ink);font-weight:700;">Modo administrador</span>':'')}</div>
+    <div class="actions">
+      ${adminVision?`<button class="btn ghost small" id="btn-nav-back">← Atrás</button><button class="btn ghost small" id="btn-nav-fwd">Adelante →</button><button class="btn ghost small" id="btn-panel-desde-selector">Panel de usuarios</button>`:''}
+      ${master?`<button class="btn ghost small" id="btn-salir-master">Salir del modo maestro</button>`:''}
+      ${(!master && adminVision)?`<button class="btn ghost small" id="btn-salir-admin-vision">Salir del modo administrador</button>`:''}
+      <button class="btn ghost small" id="btn-logout">Cambiar usuario</button>
+    </div>
+  </div>
+  ${master?`<div class="iframe-note">Modo administrador maestro activo: dentro de Plantas Eléctricas y Emergencias podrás editar y borrar formatos ya finalizados.</div>`
+    :(adminVision?`<div class="iframe-note">Modo administrador activo: puedes navegar con atrás/adelante y acceder al panel de usuarios, pero no editar ni borrar formatos finalizados — eso es exclusivo del administrador maestro.</div>`:'')}
+  <div class="selector-wrap">
+    <div class="tpl-grid">
+      ${TEMPLATES.map(t=>`
+        <div class="tpl-card" data-opentpl="${t.id}">
+          <div class="icon">${t.icon}</div>
+          <h3>${t.title}</h3>
+          <p>${t.desc}</p>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderAppFrame(){
+  const t = TEMPLATES.find(x=>x.id===state.activeTemplate);
+  const adminVision = isAdminActive();
+  return `
+  <div class="topbar">
+    <div class="who"><b>${t?t.title:''}</b> · ${state.miNombre}</div>
+    <div class="actions">
+      ${adminVision?`<button class="btn ghost small" id="btn-nav-back">← Atrás</button><button class="btn ghost small" id="btn-nav-fwd">Adelante →</button>`:''}
+      <a class="btn secondary small" href="${t?t.src:''}" target="_blank" rel="noopener">Abrir en pestaña nueva ↗</a>
+      <button class="btn ghost small" id="btn-back-selector">← Cambiar de formato</button>
+    </div>
+  </div>
+  <div class="iframe-note">Si ves un espacio en blanco o un ícono de "X" aquí abajo, usa el botón "Abrir en pestaña nueva" — pasa cuando el navegador bloquea abrir un archivo local dentro de otro (por ejemplo si abriste esta app haciendo doble clic en vez de subirla a un hosting).</div>
+  <div class="iframe-wrap"><iframe src="${t?t.src:''}" allow="geolocation; camera; microphone"></iframe></div>`;
+}
+
+function renderAdminLogin(){
+  const isMasterTarget = state.adminLoginTarget==='master';
+  return `<div class="center-wrap"><div class="box">
+    ${logoRow()}
+    <div class="card">
+      <h2>Acceso de administrador${isMasterTarget?' maestro':''}</h2>
+      <p class="sub">${isMasterTarget
+        ? 'Además de gestionar usuarios, podrás editar y borrar formatos ya finalizados dentro de Plantas Eléctricas y Emergencias.'
+        : 'Ingresa la contraseña de administrador para gestionar los usuarios autorizados.'}</p>
+      <div class="field"><label>Contraseña</label><input id="admin-pass" type="password"></div>
+      <button class="btn secondary" id="btn-admin-entrar">Entrar</button>
+      <button class="link-btn" id="btn-volver-login">← Volver</button>
+    </div>
+  </div></div>`;
+}
+
+async function renderAdminPanelAsync(){
+  const idx = await getEntityIndex('usuario');
+  idx.sort((a,b)=> new Date(b.solicitadoAt||0)-new Date(a.solicitadoAt||0));
+  const pendientes = idx.filter(u=>u.estado==='pendiente');
+  const autorizados = idx.filter(u=>u.estado==='autorizado');
+  const rechazados = idx.filter(u=>u.estado==='rechazado');
+  const enEjecucion = await getRunningFormats();
+
+  function rowHtml(u, actions){
+    return `<tr>
+      <td>${u.nombre}</td><td>${u.cedula}</td><td><span class="status-pill ${u.estado}">${u.estado}</span></td>
+      <td>${actions.map(a=>`<button class="btn small ${a.cls}" data-adminaction="${a.action}:${u.cedula}">${a.label}</button>`).join(' ')}</td>
+    </tr>`;
+  }
+
+  const html = `
+  <div class="topbar">
+    <div class="who">Panel de <b>administrador</b></div>
+    <div class="actions">
+      ${isAdminActive()?`<button class="btn ghost small" id="btn-nav-back">← Atrás</button><button class="btn ghost small" id="btn-nav-fwd">Adelante →</button>`:''}
+      <button class="btn ghost small" id="btn-refrescar-admin">🔄 Actualizar</button>
+      <button class="btn ghost small" id="btn-salir-admin">Salir</button>
+    </div>
+  </div>
+  <div class="admin-wrap">
+    <div class="warn-box">Esta contraseña de administrador es un candado simple, no una autenticación segura — cualquiera con el código fuente puede verla o cambiarla.</div>
+
+    <div class="card">
+      <h2 style="border:none;margin:0 0 4px;">📡 Todos los formatos (vista de supervisor)</h2>
+      <p class="sub">Todas las órdenes de trabajo registradas, en progreso o finalizadas, en cualquiera de las dos plantillas. Esta visión es la misma para el administrador y para el administrador maestro — solo el maestro puede editar o borrar los ya finalizados dentro del formato.</p>
+      ${enEjecucion.length===0?'<div class="empty">Aún no hay formatos registrados.</div>':`
+      <table><thead><tr><th>Plantilla</th><th>OT</th><th>Estación</th><th>Estado</th><th>Actualizado</th><th></th></tr></thead><tbody>
+      ${enEjecucion.map(e=>`<tr>
+        <td><span class="status-pill ${e.tipo==='plantas'?'autorizado':'pendiente'}">${e.tipo==='plantas'?'Plantas Eléctricas':'Emergencias'}</span></td>
+        <td>${e.id}</td><td>${e.nombreEstacion||'—'}</td>
+        <td><span class="status-pill ${e.status==='en_progreso'?'pendiente':'autorizado'}">${e.status==='en_progreso'?'En progreso':'Finalizado'}</span></td>
+        <td>${fmt(e.updatedAt)}</td>
+        <td><button class="btn secondary small" data-vertpl="${e.tipo}">Ver →</button></td>
+      </tr>`).join('')}
+      </tbody></table>`}
+    </div>
+
+    <div class="card">
+      <h2 style="border:none;margin:0 0 4px;">Autorizar un usuario directamente</h2>
+      <p class="sub">Puedes crear el acceso sin esperar a que la persona lo solicite.</p>
+      <div class="field"><label>Nombres y apellidos</label><input id="admin-nuevo-nombre"></div>
+      <div class="field"><label>Número de cédula</label><input id="admin-nuevo-cedula" inputmode="numeric"></div>
+      ${isMasterActive()?`<div class="field"><label>Rol</label><select id="admin-nuevo-rol">
+        <option value="tecnico">Técnico</option>
+        <option value="administrador">Administrador</option>
+      </select></div>`:''}
+      <button class="btn" id="btn-admin-crear">+ Autorizar usuario</button>
+    </div>
+
+    <div class="subhead">Pendientes de aprobación (${pendientes.length})</div>
+    ${pendientes.length===0?'<div class="empty">No hay solicitudes pendientes.</div>':`
+    <table><thead><tr><th>Nombre</th><th>Cédula</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${pendientes.map(u=>rowHtml(u,[{action:'autorizar',label:'✓ Autorizar',cls:'secondary'},{action:'rechazar',label:'✕ Rechazar',cls:'danger'}])).join('')}
+    </tbody></table>`}
+
+    <div class="subhead">Usuarios autorizados (${autorizados.length})</div>
+    ${autorizados.length===0?'<div class="empty">Aún no hay usuarios autorizados.</div>':`
+    <table><thead><tr><th>Nombre</th><th>Cédula</th><th>Estado</th>${isMasterActive()?'<th>Rol</th>':''}<th></th></tr></thead><tbody>
+    ${autorizados.map(u=>{
+      if(!isMasterActive()){
+        return rowHtml(u,[{action:'revocar',label:'Revocar acceso',cls:'danger'}]);
+      }
+      const deshabilitado = u.activo===false;
+      return `<tr>
+        <td>${u.nombre}</td><td>${u.cedula}</td>
+        <td><span class="status-pill ${deshabilitado?'rechazado':'autorizado'}">${deshabilitado?'deshabilitado':'habilitado'}</span></td>
+        <td><select data-rolchange="${u.cedula}" style="width:auto;">
+          <option value="tecnico" ${u.rol!=='administrador'?'selected':''}>Técnico</option>
+          <option value="administrador" ${u.rol==='administrador'?'selected':''}>Administrador</option>
+        </select></td>
+        <td>
+          <button class="btn small ${deshabilitado?'secondary':'danger'}" data-adminaction="${deshabilitado?'habilitar':'deshabilitar'}:${u.cedula}">${deshabilitado?'Habilitar':'Deshabilitar'}</button>
+          <button class="btn small danger" data-adminaction="revocar:${u.cedula}">Revocar acceso</button>
+        </td>
+      </tr>`;
+    }).join('')}
+    </tbody></table>`}
+
+    <div class="subhead">Rechazados (${rechazados.length})</div>
+    ${rechazados.length===0?'<div class="empty">No hay usuarios rechazados.</div>':`
+    <table><thead><tr><th>Nombre</th><th>Cédula</th><th>Estado</th><th></th></tr></thead><tbody>
+    ${rechazados.map(u=>rowHtml(u,[{action:'autorizar',label:'Autorizar de todas formas',cls:'secondary'}])).join('')}
+    </tbody></table>`}
+  </div>`;
+  document.getElementById('app').innerHTML = html;
+  attachAdminHandlers();
+}
+
+// ---------- EVENTS ----------
+function attachHandlers(){
+  const btnSolicitar = document.getElementById('btn-solicitar');
+  if(btnSolicitar) btnSolicitar.onclick = async ()=>{
+    const nombre = document.getElementById('li-nombre').value.trim();
+    const cedula = document.getElementById('li-cedula').value.trim();
+    if(!nombre || !cedula){ alert('Ingresa tu nombre y tu número de cédula.'); return; }
+    localStorage.setItem('miCedula', cedula);
+    localStorage.setItem('miNombre', nombre);
+    state.miCedula = cedula; state.miNombre = nombre;
+    let u = await loadEntity('usuario', cedula);
+    if(!u){ u = emptyUsuario(cedula, nombre); await saveEntity('usuario', u); }
+    else if(u.nombre !== nombre){ u.nombre = nombre; await saveEntity('usuario', u); }
+    state.miEstado = u.estado;
+    if(u.estado==='autorizado' && u.activo===false) go('disabled');
+    else if(u.estado==='autorizado'){ applyRoleFlags(u); go('selector'); }
+    else if(u.estado==='rechazado') go('rejected');
+    else go('pending');
+  };
+  const btnAdminLink = document.getElementById('btn-admin-link');
+  if(btnAdminLink) btnAdminLink.onclick = ()=>{ state.adminLoginTarget='admin'; go('admin-login'); };
+  const btnMasterLink = document.getElementById('btn-master-link');
+  if(btnMasterLink) btnMasterLink.onclick = ()=>{ state.adminLoginTarget='master'; go('admin-login'); };
+
+  const btnRefrescar = document.getElementById('btn-refrescar');
+  if(btnRefrescar) btnRefrescar.onclick = ()=> bootstrap();
+  const btnCambiarUsuario = document.getElementById('btn-cambiar-usuario');
+  if(btnCambiarUsuario) btnCambiarUsuario.onclick = ()=>{
+    localStorage.removeItem('miCedula'); localStorage.removeItem('miNombre');
+    localStorage.removeItem('adminActive'); localStorage.removeItem('masterAdmin');
+    state.miCedula=''; state.miNombre=''; state.isAdmin=false; go('login');
+  };
+
+  document.querySelectorAll('[data-opentpl]').forEach(c=> c.onclick = ()=>{ go('app', {activeTemplate: c.dataset.opentpl}); });
+  const btnBackSelector = document.getElementById('btn-back-selector');
+  if(btnBackSelector) btnBackSelector.onclick = ()=>{ go('selector', {activeTemplate:null}); };
+  const btnLogout = document.getElementById('btn-logout');
+  if(btnLogout) btnLogout.onclick = ()=>{
+    localStorage.removeItem('miCedula'); localStorage.removeItem('miNombre');
+    localStorage.removeItem('adminActive'); localStorage.removeItem('masterAdmin');
+    state.miCedula=''; state.miNombre=''; state.isAdmin=false; go('login');
+  };
+  const btnPanelDesdeSelector = document.getElementById('btn-panel-desde-selector');
+  if(btnPanelDesdeSelector) btnPanelDesdeSelector.onclick = ()=>{ state.isAdmin=true; go('admin-panel'); };
+  const btnNavBack = document.getElementById('btn-nav-back');
+  if(btnNavBack) btnNavBack.onclick = ()=> history.back();
+  const btnNavFwd = document.getElementById('btn-nav-fwd');
+  if(btnNavFwd) btnNavFwd.onclick = ()=> history.forward();
+  const btnSalirMaster = document.getElementById('btn-salir-master');
+  if(btnSalirMaster) btnSalirMaster.onclick = ()=>{
+    if(!confirm('¿Salir del modo administrador maestro? Perderás el permiso de editar o borrar formatos finalizados hasta que vuelvas a entrar con la contraseña maestra.')) return;
+    localStorage.removeItem('masterAdmin'); localStorage.removeItem('adminActive'); state.isAdmin=false; go('login');
+  };
+  const btnSalirAdminVision = document.getElementById('btn-salir-admin-vision');
+  if(btnSalirAdminVision) btnSalirAdminVision.onclick = ()=>{
+    localStorage.removeItem('adminActive'); state.isAdmin=false; go('login');
+  };
+
+  const btnAdminEntrar = document.getElementById('btn-admin-entrar');
+  if(btnAdminEntrar) btnAdminEntrar.onclick = ()=>{
+    const pass = document.getElementById('admin-pass').value;
+    if(state.adminLoginTarget==='master'){
+      if(pass===MASTER_ADMIN_PASSWORD){ localStorage.setItem('masterAdmin','1'); state.isAdmin=true; go('selector'); }
+      else alert('Contraseña incorrecta.');
+    } else {
+      if(pass===ADMIN_PASSWORD){ localStorage.removeItem('masterAdmin'); localStorage.setItem('adminActive','1'); state.isAdmin=true; go('selector'); }
+      else alert('Contraseña incorrecta.');
+    }
+  };
+  const btnVolverLogin = document.getElementById('btn-volver-login');
+  if(btnVolverLogin) btnVolverLogin.onclick = ()=>{ go('login'); };
+}
+
+function attachAdminHandlers(){
+  const btnSalirAdmin = document.getElementById('btn-salir-admin');
+  if(btnSalirAdmin) btnSalirAdmin.onclick = ()=>{ state.isAdmin=false; go('login'); };
+  const btnRefrescarAdmin = document.getElementById('btn-refrescar-admin');
+  if(btnRefrescarAdmin) btnRefrescarAdmin.onclick = ()=> renderAdminPanelAsync();
+  const btnNavBackAdmin = document.getElementById('btn-nav-back');
+  if(btnNavBackAdmin) btnNavBackAdmin.onclick = ()=> history.back();
+  const btnNavFwdAdmin = document.getElementById('btn-nav-fwd');
+  if(btnNavFwdAdmin) btnNavFwdAdmin.onclick = ()=> history.forward();
+  document.querySelectorAll('[data-vertpl]').forEach(b=>{
+    b.onclick = ()=>{ go('app', {activeTemplate: b.dataset.vertpl}); };
+  });
+  const btnCrear = document.getElementById('btn-admin-crear');
+  if(btnCrear) btnCrear.onclick = async ()=>{
+    const nombre = document.getElementById('admin-nuevo-nombre').value.trim();
+    const cedula = document.getElementById('admin-nuevo-cedula').value.trim();
+    if(!nombre || !cedula){ alert('Ingresa nombre y cédula.'); return; }
+    const u = await loadEntity('usuario', cedula) || emptyUsuario(cedula, nombre);
+    u.nombre = nombre; u.estado = 'autorizado'; u.autorizadoAt = nowIso();
+    const rolSelect = document.getElementById('admin-nuevo-rol');
+    if(rolSelect) u.rol = rolSelect.value;
+    await saveEntity('usuario', u);
+    renderAdminPanelAsync();
+  };
+  document.querySelectorAll('[data-adminaction]').forEach(b=>{
+    b.onclick = async ()=>{
+      const [action, cedula] = b.dataset.adminaction.split(':');
+      const u = await loadEntity('usuario', cedula);
+      if(!u) return;
+      if(action==='autorizar'){ u.estado='autorizado'; u.autorizadoAt=nowIso(); }
+      else if(action==='rechazar'){ u.estado='rechazado'; }
+      else if(action==='revocar'){ u.estado='rechazado'; }
+      else if(action==='habilitar'){ u.activo = true; }
+      else if(action==='deshabilitar'){ u.activo = false; }
+      await saveEntity('usuario', u);
+      renderAdminPanelAsync();
+    };
+  });
+  document.querySelectorAll('[data-rolchange]').forEach(sel=>{
+    sel.onchange = async ()=>{
+      const cedula = sel.dataset.rolchange;
+      const u = await loadEntity('usuario', cedula);
+      if(!u) return;
+      u.rol = sel.value;
+      await saveEntity('usuario', u);
+      renderAdminPanelAsync();
+    };
+  });
+}
+
+bootstrap();
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+}
+</script>
+</body>
+</html>
