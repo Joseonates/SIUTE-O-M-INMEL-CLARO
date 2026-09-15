@@ -496,8 +496,15 @@ function summarize(type, obj){
 }
 async function saveEntity(type, obj){
   obj.updatedAt = nowIso();
-  await window.storage.set(`${type}:${obj.id}`, JSON.stringify(obj), true);
-  await window.storage.set(`${type}-idx:${obj.id}`, JSON.stringify(summarize(type,obj)), true);
+  try{
+    await window.storage.set(`${type}:${obj.id}`, JSON.stringify(obj), true);
+    await window.storage.set(`${type}-idx:${obj.id}`, JSON.stringify(summarize(type,obj)), true);
+    return true;
+  }catch(e){
+    console.error('saveEntity error:', e);
+    alert('No se pudo guardar en el servidor. Revisa que el proyecto de Firebase esté configurado correctamente (firebaseConfig) y que tengas conexión a internet.\\n\\nDetalle técnico: ' + (e && e.message ? e.message : e));
+    return false;
+  }
 }
 async function loadEntity(type, id){
   try{ const r = await window.storage.get(`${type}:${id}`, true); return r ? JSON.parse(r.value) : null; }catch(e){ return null; }
@@ -1708,7 +1715,9 @@ function renderForm(sess, readonly){
           <div class="row-card-head"><span class="idx">FOTO #${i+1}</span>${!readonly?`<button class="row-del" data-delhallazgorow="hallazgosFotos|${f.id}">Eliminar</button>`:''}</div>
           <div data-photo-cell="hallazgosFotos|${f.id}">${photoCellHtml('hallazgosFotos|'+f.id, f, readonly)}</div>
         </div>`).join('') || (readonly?'<p class="hint">Sin fotos registradas.</p>':'')}
-      ${!readonly?`<button class="add-row-btn" data-addhallazgorow="hallazgosFotos">+ Agregar foto (cámara o archivo)</button>`:''}
+      ${!readonly?`<button class="add-row-btn" data-addhallazgorow="hallazgosFotos">+ Agregar foto (una, con cámara)</button>
+      <button type="button" class="add-row-btn" data-multiadd="hallazgosFotos">+ Agregar varias fotos desde galería</button>
+      <input type="file" accept="image/*" multiple id="multi-photo-input" style="display:none;">`:''}
       <div class="subhead">Detalle por hallazgo</div>
       ${(sess.hallazgosDetalle||[]).map((h,i)=>`
         <div class="row-card">
@@ -2048,7 +2057,8 @@ function attachHandlers(){
     state.currentSession = emptySession(otVal);
     state.view = "sitio-check";
     render();
-    await saveSessionSafe(state.currentSession);
+    const ok = await saveSessionSafe(state.currentSession);
+    if(!ok) alert('⚠️ No se pudo guardar esta OT en el servidor. Revisa tu conexión y que Firebase esté configurado correctamente — de lo contrario, este formato NO va a aparecer en el Historial ni en Supervisor desde otros dispositivos.');
     startLocationLoop(state.currentSession);
   };
 
@@ -2135,6 +2145,31 @@ function attachHandlers(){
       render();
     };
   });
+
+  document.querySelectorAll('[data-multiadd]').forEach(b=>{
+    b.onclick = ()=>{
+      const inp = document.getElementById('multi-photo-input');
+      if(inp){ inp.dataset.targetArr = b.dataset.multiadd; inp.click(); }
+    };
+  });
+  const multiPhotoInputPlantas = document.getElementById('multi-photo-input');
+  if(multiPhotoInputPlantas) multiPhotoInputPlantas.onchange = async (e)=>{
+    const files = Array.from(e.target.files||[]);
+    if(!files.length) return;
+    const arrName = multiPhotoInputPlantas.dataset.targetArr;
+    const s = state.currentSession;
+    if(!s[arrName]) s[arrName] = [];
+    for(const file of files){
+      try{
+        const dataUrl = await compressImage(file);
+        s[arrName].push({id:rid(), foto:dataUrl});
+      }catch(err){ console.error(err); }
+    }
+    const ok = await saveSessionSafe(s);
+    if(!ok) alert('Algunas fotos no se pudieron guardar en el servidor.');
+    render();
+    e.target.value = '';
+  };
 
   document.querySelectorAll('[data-rowfield]').forEach(inp=>{
     const isSelect = inp.tagName==='SELECT';
@@ -2857,7 +2892,9 @@ function renderForm(sess, readonly){
   html += `<div class="card"><h2>7. Evidencia fotográfica de la actividad</h2>
     <p class="hint">Agrega cada foto con su propio título (ej: "Panorámica del transformador").</p>
     ${sess.evidencias.map((e,i)=>rowCardEvidencia(e,i,readonly)).join('') || (readonly?'<p class="hint">Sin evidencias registradas.</p>':'')}
-    ${!readonly?`<button class="add-row-btn" data-addrow="evidencias">+ Agregar evidencia fotográfica</button>`:''}
+    ${!readonly?`<button class="add-row-btn" data-addrow="evidencias">+ Agregar evidencia (una)</button>
+    <button type="button" class="add-row-btn" data-multiadd="evidencias">+ Agregar varias fotos desde galería</button>
+    <input type="file" accept="image/*" multiple id="multi-photo-input" style="display:none;">`:''}
   </div>`;
 
   html += `<div class="card"><h2>8. Hallazgos</h2>
@@ -2866,7 +2903,8 @@ function renderForm(sess, readonly){
       ${textareaField('Observaciones de los hallazgos', 'hallazgosObservaciones', sess.hallazgosObservaciones, readonly)}
       <div class="subhead">Registro fotográfico de hallazgos</div>
       ${(sess.hallazgosFotos||[]).map((f,i)=>rowCardHallazgoFoto(f,i,readonly)).join('') || (readonly?'<p class="hint">Sin fotos registradas.</p>':'')}
-      ${!readonly?`<button class="add-row-btn" data-addrow="hallazgosFotos">+ Agregar foto (cámara o archivo)</button>`:''}
+      ${!readonly?`<button class="add-row-btn" data-addrow="hallazgosFotos">+ Agregar foto (una)</button>
+      <button type="button" class="add-row-btn" data-multiadd="hallazgosFotos">+ Agregar varias fotos desde galería</button>`:''}
       <div class="subhead">Detalle por hallazgo</div>
       ${sess.hallazgos.map((h,i)=>rowCardHallazgo(h,i,readonly)).join('') || (readonly?'<p class="hint">Sin hallazgos registrados.</p>':'')}
       ${!readonly?`<button class="add-row-btn" data-addrow="hallazgos">+ Agregar hallazgo</button>`:''}
@@ -3264,7 +3302,8 @@ function attachHandlers(){
     if(state.pendingTipo){ state.currentSession.actividad.tipoActividad = state.pendingTipo; state.pendingTipo = null; }
     state.view = "form";
     render();
-    await saveSessionSafe(state.currentSession);
+    const ok = await saveSessionSafe(state.currentSession);
+    if(!ok) alert('⚠️ No se pudo guardar esta OT en el servidor. Revisa tu conexión y que Firebase esté configurado correctamente — de lo contrario, este formato NO va a aparecer en el Historial ni en Supervisor desde otros dispositivos.');
     startLocationLoop(state.currentSession);
   };
 
@@ -3338,7 +3377,32 @@ function attachHandlers(){
     };
   });
 
-  const btnAddVideo = document.getElementById('btn-add-video');
+  document.querySelectorAll('[data-multiadd]').forEach(b=>{
+    b.onclick = ()=>{
+      const inp = document.getElementById('multi-photo-input');
+      if(inp){ inp.dataset.targetArr = b.dataset.multiadd; inp.click(); }
+    };
+  });
+  const multiPhotoInputEmer = document.getElementById('multi-photo-input');
+  if(multiPhotoInputEmer) multiPhotoInputEmer.onchange = async (e)=>{
+    const files = Array.from(e.target.files||[]);
+    if(!files.length) return;
+    const arrName = multiPhotoInputEmer.dataset.targetArr;
+    if(!state.currentSession[arrName]) state.currentSession[arrName] = [];
+    for(const file of files){
+      try{
+        const dataUrl = await compressImage(file);
+        if(arrName==='evidencias') state.currentSession[arrName].push({id:rid(), caption:'', foto:dataUrl});
+        else state.currentSession[arrName].push({id:rid(), foto:dataUrl});
+      }catch(err){ console.error(err); }
+    }
+    const ok = await saveSessionSafe(state.currentSession);
+    if(!ok) alert('Algunas fotos no se pudieron guardar en el servidor.');
+    render();
+    e.target.value = '';
+  };
+
+
   if(btnAddVideo) btnAddVideo.onclick = ()=>{ const inp = document.getElementById('video-input'); if(inp) inp.click(); };
   const videoInput = document.getElementById('video-input');
   if(videoInput) videoInput.onchange = async (e)=>{
