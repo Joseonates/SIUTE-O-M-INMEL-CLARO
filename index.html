@@ -568,7 +568,7 @@ function showModule(id){
   const plantasRoot = document.getElementById('plantas-app');
   const emergenciasRoot = document.getElementById('emergencias-app');
   const bar = document.getElementById('back-to-launcher-bar');
-  if(bar) bar.style.display='';
+  if(bar) bar.style.display='block';
   if(id==='plantas'){
     if(window.EmergenciasApp) window.EmergenciasApp.stop();
     if(emergenciasRoot){ emergenciasRoot.style.display='none'; emergenciasRoot.innerHTML=''; }
